@@ -73,9 +73,10 @@ switch inference_type
         local_default_values = {false};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         
-        [samples, acceptance_ratio, log_Zs] = pimh(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
+        [samples, acceptance_ratio, log_Zs, b_accept] = pimh(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
         other_outputs.acceptance_ratio = acceptance_ratio;
         other_outputs.log_Zs = log_Zs;
+        other_outputs.b_accept = b_accept;
         
     case 'pgibbs'
         local_option_names = {'b_Rao_Black','initial_retained_particle'};
@@ -85,12 +86,12 @@ switch inference_type
         [samples, log_Zs] = pgibbs(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});       
         other_outputs.log_Zs = log_Zs;
         
-    case 'alt_pmcmc'
-        local_option_names = {'initialization'};
-        local_default_values = {[]};
+    case 'a_pgibbs'
+        local_option_names = {'b_Rao_Black','initial_retained_particle'};
+        local_default_values = {true,[]};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         
-        [samples, log_Zs, iKept] = alt_pmcmc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});       
+        [samples, log_Zs, iKept] = a_pgibbs(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});       
         other_outputs.log_Zs = log_Zs;
         other_outputs.iKept = iKept;
         

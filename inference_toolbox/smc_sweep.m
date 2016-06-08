@@ -9,9 +9,7 @@ function [particles, log_Z] = smc_sweep(sampling_functions,weighting_functions,N
 %   N (+ve integer) = Number of particles, also N in paper
 %
 % Optional inputs:
-%   b_compress (boolean) = Exploits the degeneracy caused by resampling to
-%                          store the output using sparse matrices and an
-%                          expliticly stored, sparse, ancestral lineage.
+%   b_compress (boolean) = Whether to use compress_samples
 %                               Default = false;
 %   b_sparse (boolean) = Takes the sparsity exploitation to the next level
 %                        by compressing on-the-fly after each step in the

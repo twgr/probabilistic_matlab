@@ -11,9 +11,7 @@ function [samples, log_Z_total, log_Zs] = smc(sampling_functions,weighting_funct
 %   n_iter = Number of independent sweeps to perform
 %
 % Optional inputs:
-%   b_compress (boolean) = Exploits the degeneracy caused by resampling to
-%                          store the output using sparse matrices and an
-%                          expliticly stored, sparse, ancestral lineage.
+%   b_compress (boolean) = Whether to use compress_samples
 %                               Default = false;
 %   b_sparse (boolean) = Takes the sparsity exploitation to the next level
 %                        by compressing on-the-fly after each step in the
@@ -29,6 +27,10 @@ function [samples, log_Z_total, log_Zs] = smc(sampling_functions,weighting_funct
 %   log_Zs = Marginal likelihood of individual sweeps
 %
 % Tom Rainforth 07/06/16
+
+if ~exist('b_sparse','var')
+    b_sparse = false;
+end
 
 if b_sparse && b_compress
     warning('b_sparse does its own compression, no extra compression required');

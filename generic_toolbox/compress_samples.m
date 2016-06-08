@@ -1,4 +1,32 @@
-function particles = compress_samples(particles, n_resample_steps)
+function particles = compress_samples(particles, T)
+%compress_samples
+%
+% Exploits the degeneracy caused by resampling to store the output using 
+% sparse matrices and an implicit ancestral lineage.  This lineage is coded
+% by the ordering of the samples - when a sample value is empty (signified
+% by equalling zero in a the sparse array), it takes the value of the
+% sample above (i.e. (i,j) takes its value from (i-1,j)).  If the sample
+% above is also empty, it is equal to the sample above that and so on.
+% This means that only samples that are unique at the current time step (or
+% for discrete variables some previous time point) need to be stored,
+% giving massive memory gains for long state sequences.  The particle
+% weights are now also stored as a sparse array, will weights collapsed
+% onto the sample where the variable values are provided.  The provided 
+% output processing functions are overloaded to deal with this compressed
+% format.  Care should be taken as a consequence of the coding, things such
+% as naively taking the mean will give incorrect answers - the provided
+% processing functions should be used instead or the compressed format
+% avoided.
+%
+% Inputs:
+%   particles = Uncompressed stack_object
+%   T = Total number of weighting functions.  Note if the individual x_t
+%       are multi-dimensional, this may be different to the array width
+%
+% Outputs:
+%   particles = Compressed stack_object
+%
+% Tom Rainforth 08/06/16
 
 p_fields = fields(particles.var);
 
@@ -21,12 +49,12 @@ for n_f = 1:numel(p_fields)
     assert(isnumeric(particles.var.(p_fields{n_f})),'Currently only supports compression when all variables are numeric');
     variable_sizes(n_f,:) = size(particles.var.(p_fields{n_f}));
     bContinuous(n_f) = rem(particles.var.(p_fields{n_f})(1),1)~=0;
-    bFullWidth(n_f) = variable_sizes(n_f,2)==n_resample_steps;
+    bFullWidth(n_f) = variable_sizes(n_f,2)==T;
 end
 
 iDiscrete = find(~bContinuous);
 
-if n_resample_steps==1 && isempty(iDiscrete)
+if T==1 && isempty(iDiscrete)
     warning('Compression does nothing if only single sample-weight step and continue variables');
     particles.relative_particle_weights = particles.relative_particle_weights;
     return

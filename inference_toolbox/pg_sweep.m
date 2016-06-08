@@ -15,9 +15,7 @@ function [particles, log_Z, retained_particle] = pg_sweep(sampling_functions,...
 %   retained_particle = A retained particle of type stack_object.  Sweep
 %                       will be conditioned on this particle when provided.
 %                               Default = empty
-%   b_compress (boolean) = Exploits the degeneracy caused by resampling to
-%                          store the output using sparse matrices and an
-%                          expliticly stored, sparse, ancestral lineage.
+%   b_compress (boolean) = Whether to use compress_samples
 %                               Default = false;
 %   b_Rao_Black (boolean) = If true all particles are returned with
 %                           weights, else only a single particle (i.e. the
@@ -34,9 +32,10 @@ function [particles, log_Z, retained_particle] = pg_sweep(sampling_functions,...
 
 global sample_size
 
-if ~exist('retained_particle','var') || isempty(retained_particle) || isnan(retained_particle)
+if ~exist('retained_particle','var') || isempty(retained_particle)
     % Run as an unconditional smc sweep if no retained particle supplied
     [particles, log_Z] = smc_sweep(sampling_functions,weighting_functions,N,false,false);
+    p_fields = fields(particles.var);
 else
     % Otherwise run as a conditional smc sweep.
     

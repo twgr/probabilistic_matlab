@@ -1,4 +1,27 @@
 function [s, other_outputs] = struct_array_to_single_struct(s_array,assignment_order,other_outputs_array)
+%struct_array_to_single_struct
+%
+% Converts an array of structures (or objects) to a single structure /
+% object according to an assignment_order.  This is complicated by the
+% fact that variables may change type or dimension between the different
+% instances in the array due to the dynanic typing.  If both are numeric,
+% padding with NaNs is used, otherwise different instances are stored as a
+% cell array in output.
+%
+% Inputs:
+%  s_array = Starting structure / object array
+%  assignment_order = Cell array dictating the assignment order.  These
+%                      are indices on the outputs such that
+%                  s.field(assignment_order{1}(1)) = s_array(1).field(1)
+%  other_outputs_array = Cell array of same size to be rearranged to a
+%                        single array (either cell or numeric depending on
+%                        type) using the same assignment_order
+%
+% Output:
+%  s = Single structure / object with desired rearrangement
+%  other_outputs = Rearrange other outputs in appropriate form
+%
+% Tom Rainforth 08/06/16
 
 if ~exist('assignment_order','var')
     assignment_order = [];

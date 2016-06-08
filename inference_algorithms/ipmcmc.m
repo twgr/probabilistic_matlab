@@ -8,18 +8,18 @@ function [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ...
 %   T. Rainforth, C. A. Naesseth, F. Lindsten, B. Paige, J-W. van de Meent,
 %   A. Doucet and F. Wood. Interacting particle Markov chain Monte Carlo.
 %   In ICML 2016
-% Should only be called indirectly through the infer.m function which deals
-% with many processes common to the different inference algorithms such as
-% allowing for default options and processing the outputs.
+% Though can be used directly, it is recommended to use this through the 
+% infer.m function which deals with many processes common to the different 
+% inference algorithms such as allowing for default options and processing 
+% the outputs.  In particular, infer converts model files to the
+% automatically produce the sampling_functions and weighting_functions.
 %
-% Inputs:
+% Required inputs:
 %   sampling_functions = See infer.m
 %   weighting_functions = See infer.m
 %   N (+ve integer) = Number of particles, also N in paper
 %   n_iter (+ve integer) = Number of MCMC iterations (indexed by r in the paper)
-%   b_compress (boolean) = Exploits the degeneracy caused by resampling to
-%                          store the output using sparse matrices and an
-%                          expliticly stored, sparse, ancestral lineage.
+%   b_compress (boolean) = Whether to use compress_samples
 %   M (+ve integer) = Total number of nodes, also M in paper
 %   b_parrallel (boolean) = Whether to carry out the calculations in
 %                           parallel
@@ -32,7 +32,7 @@ function [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ...
 %                     requires significantly more memory but should give
 %                     more accurate results.  There is little loss in RB
 %                     the conditional node update.
-%                           Default = true
+% Optional inputs:
 %   n_conditional_gibbs_cycles (+ve integer) = Number of gibbs sweeps to
 %                     update the indices of the conditional nodes.  The
 %                     main advantage of running more sweeps is to improve
@@ -56,6 +56,10 @@ function [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ...
 %            set of SMC sweeps (c_{1:P} in the paper).
 %
 % Tom Rainforth 07/06/16
+
+if ~exist('n_conditional_gibbs_cycles','var')
+    n_conditional_gibbs_cycles = 1;
+end
 
 % Assign initial retained particles.  Whenever the retained particle is
 % empty, pg_sweep will run an smc sweep rather than a csmc sweep.  Thus the
