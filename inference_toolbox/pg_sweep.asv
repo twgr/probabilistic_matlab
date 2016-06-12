@@ -104,10 +104,7 @@ else
             i_take_new = i_resample(i_resample~=1)-1;
             n_ret = sum(i_resample==1);
             if n_ret==0
-                var_fields = fields(particles.var);
-                for n_f = 1:numel(var_fields)
-                    particles.var.(var_fields{n_f}) = particles.var.(var_fields{n_f})(i_take_new,:);
-                end
+                
             else
                 i_assign = 1:(N-1);
                 particles = compose_two_sample_objects([],particles,intermediary_retained_particle,...

@@ -1,5 +1,5 @@
 function [samples, log_Zs, b_accept] = a_pgibbs(sampling_functions,weighting_functions,...
-    N,n_iter,b_compress,b_Rao_Black,initial_retained_particle)
+                              N,n_iter,b_compress,b_Rao_Black,initial_retained_particle)
 %a_pgibbs   Alternate move particle Gibbs 
 %
 % Carries out the alternate move particle Gibbs (APG) algorithm which
@@ -11,9 +11,9 @@ function [samples, log_Zs, b_accept] = a_pgibbs(sampling_functions,weighting_fun
 %   weighting_functions = See infer.m
 %   N (+ve integer) = Number of particles, also N in paper
 %   n_iter (+ve integer) = Number of iterations
+%   b_compress (boolean) = Whether to use compress_samples
 %   b_Rao_Black (boolean) = Whether to Rao-Blackwellize and return all
 %                           generated samples or just the retained particle
-%   b_compress (boolean) = Whether to use compress_samples
 %
 % Optional inputs:
 %   initial_retained_particle (stack_object) = Allows the algorithm to be

@@ -1,6 +1,6 @@
-function [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ...
-    ipmcmc(sampling_functions,weighting_functions,N,n_iter,b_compress,M,b_parrallel,...
-    P,b_Rao_Black,n_conditional_gibbs_cycles,initial_retained_particles)
+function [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ...
+    ipmcmc(sampling_functions,weighting_functions,N,n_iter,b_compress,b_Rao_Black,...
+    b_parrallel,M,P,n_conditional_gibbs_cycles,initial_retained_particles)
 %ipmcmc  iPMCMC inference algorithm
 %
 % Performs inference using interacting particle Markov chain Monte Carlo.
@@ -14,16 +14,12 @@ function [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ...
 % the outputs.  In particular, infer converts model files to the
 % automatically produce the sampling_functions and weighting_functions.
 %
-% Required inputs:
+% Inputs:
 %   sampling_functions = See infer.m
 %   weighting_functions = See infer.m
 %   N (+ve integer) = Number of particles, also N in paper
 %   n_iter (+ve integer) = Number of MCMC iterations (indexed by r in the paper)
 %   b_compress (boolean) = Whether to use compress_samples
-%   M (+ve integer) = Total number of nodes, also M in paper
-%   b_parrallel (boolean) = Whether to carry out the calculations in
-%                           parallel
-%   P (+ve integer) = Number of conditional nodes
 %   b_Rao_Black (boolean | 'cond_update_only') = Controls level of
 %                     Rao-Blackwellization (RB).  If true both the sampling of
 %                     the retained particles and the conditional node
@@ -32,7 +28,10 @@ function [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ...
 %                     requires significantly more memory but should give
 %                     more accurate results.  There is little loss in RB
 %                     the conditional node update.
-% Optional inputs:
+%   b_parrallel (boolean) = Whether to carry out the calculations in
+%                           parallel
+%   M (+ve integer) = Total number of nodes, also M in paper
+%   P (+ve integer) = Number of conditional nodes
 %   n_conditional_gibbs_cycles (+ve integer) = Number of gibbs sweeps to
 %                     update the indices of the conditional nodes.  The
 %                     main advantage of running more sweeps is to improve
@@ -47,13 +46,13 @@ function [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ...
 % Outputs:
 %   samples = Object array of type stack_object containing details about
 %             sampled variables, their weights and any constant variables
-%   switching_rate = Proportion of retained particles inhereted from an
-%             unconditional sweep at each iteration
 %   log_Zs = Marginal likelihood of individual sweeps
 %   node_weights = Relative weights given to each node under the RB at each
 %            iterationb
 %   sampled_indices = Indices of the conditional nodes for the NEXT
 %            set of SMC sweeps (c_{1:P} in the paper).
+%   switching_rate = Proportion of retained particles inhereted from an
+%             unconditional sweep at each iteration
 %
 % Tom Rainforth 07/06/16
 

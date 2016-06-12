@@ -14,8 +14,8 @@ classdef stack_object
     end
     
     properties (Hidden=true)
-        variables_step % Used in retained variable to specify which variables exist at corresponding point in state sequence
-        sizes_step % Used in retained variable to specify variable sizes at corresponding point in state sequence
+        variables_step % Used in retained variable to specify which variables exist at that s
+        sizes_step
         sparse_history % Variable used when compressing on-the-fly with smc inference
     end
     

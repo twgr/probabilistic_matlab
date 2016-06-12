@@ -6,7 +6,7 @@ function [X, other_output] = compose_two_sample_objects(X,X_1,X_2,i_assign,n_1,n
 %
 % Required inputs:
 %   X = Starting object to which things are added.  If empty, an empty
-%       object except for setting X.con to X_1.con is used
+%   object ex
 %   X_1, X2 = Stack objects to combine.
 %   i_assign = Array of reassignment ids.  Ids refer to output rather than
 %              input
@@ -23,11 +23,6 @@ function [X, other_output] = compose_two_sample_objects(X,X_1,X_2,i_assign,n_1,n
 %   X, other_output
 %
 % Tom Rainforth 08/06/16
-
-if isempty(X)
-    X = stack_object;
-    X.con = X_1.con;
-end
 
 if ~exist('i_preorder_1','var')
     i_preorder_1 = [];

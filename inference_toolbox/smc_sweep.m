@@ -1,4 +1,4 @@
-function [particles, log_Z] = smc_sweep(sampling_functions,weighting_functions,N,b_compress,b_sparse)
+function [particles, log_Z, variables_step, sizes_step] = smc_sweep(sampling_functions,weighting_functions,N,b_compress,b_online_compression)
 %smc_sweep   Carries out a single unconditional SMC sweep
 %
 % Performs sequential Monte Carlo (SMC) as per Algorithm 1 in the paper.
@@ -11,7 +11,8 @@ function [particles, log_Z] = smc_sweep(sampling_functions,weighting_functions,N
 % Optional inputs:
 %   b_compress (boolean) = Whether to use compress_samples
 %                               Default = false;
-%   b_sparse (boolean) = Takes the sparsity exploitation to the next level
+%   b_online_compression (boolean) = 
+%                        Takes the sparsity exploitation to the next level
 %                        by compressing on-the-fly after each step in the
 %                        state sequence.  Note that this incurs significant
 %                        computational overhead and should be avoided 
@@ -21,12 +22,14 @@ function [particles, log_Z] = smc_sweep(sampling_functions,weighting_functions,N
 % Outputs:
 %   particles = Object of type stack_object storing all the samples.
 %   log_Z = Log marginal likelihood estimate as per equation 4 in the paper
+%   variables_step = Variables present at each step in state sequence
+%   sizes_step = Sizes of variables at each step in state sequence
 %
 % Tom Rainforth 07/06/16
 
 if ~exist('b_compress','var'); b_compress = false; end
 
-if ~exist('b_sparse','var'); b_sparse = false; end
+if ~exist('b_online_compression','var'); b_online_compression = false; end
 
 % Global parameter that allows for communication of the sample size with
 % the sampling_functions and weighting_functions if desired.
@@ -35,8 +38,9 @@ sample_size = N;
 
 particles = stack_object;
 log_Z = 0;
+[variables_step,sizes_step] = deal(cell(numel(sampling_functions),1));
 
-if b_sparse % Preallocation in sparse case    
+if b_online_compression % Preallocation in sparse case    
     parents = sparse(N,numel(sampling_functions));
 end
 
@@ -46,21 +50,40 @@ for n=1:numel(sampling_functions)
     % Weight as per eq 1b in the paper
     log_weights = weighting_functions{n}(particles);
     
+    % Store intermediary details
+    variables_step{n} = fields(particles.var);
+    for v=1:numel(variables_step{n})
+        if isnumeric(particles.var.(variables_step{n}{v})) || (size(particles.var.(variables_step{n}{v}),2)>1)
+            % Here we have an array so just need to store the second
+            % dimension which is constant for all samples
+            sizes_step{n}{v} = size(particles.var.(variables_step{n}{v}),2);
+        elseif iscell(particles.var.(variables_step{n}{v}))
+            % Here we have a n_samplesx1 size cell array so the size
+            % might be different within each cell and needs storing
+            % seperately
+            sizes_step{n}{v} = cellfun(@(x) size(x,2), particles.var.(variables_step{n}{v}));
+        else
+            sizes_step{n}{v} = 1;
+        end
+    end
+    
     if n~=numel(sampling_functions)
         % When not at the final step, perform resampling.
         [i_resample, log_Z_step, n_times_sampled] = resample_step(log_weights,numel(log_weights));
         
         assert(~isnan(log_Z_step),'log_Z_step is NaN');
         log_Z = log_Z+log_Z_step;
-        
-        if ~b_sparse
+              
+        if ~b_online_compression
             % Update particles object as per the resampling indices
             p_fields = fields(particles.var);
             for n_f = 1:numel(p_fields)
                 particles.var.(p_fields{n_f}) = particles.var.(p_fields{n_f})(i_resample,:);
             end
         else
-%% Complicated on-fly compression code
+%% Online compression code
+% Compresses after each sample using a sparse array and implicitly storing
+% the ancestral path in the structure of the sparse array.
             n_times_sampled = n_times_sampled(1:end-1);
             b_sampled = n_times_sampled~=0;
             n_times_sampled_no_zeros = n_times_sampled(b_sampled);
@@ -104,7 +127,7 @@ particles.relative_particle_weights = w/sum(w);
 
 %% Tying up of sample compression as required.
 
-if b_sparse
+if b_online_compression
     parents(:,end) = sparse((1:N)');
     heritage = full(parents(:,end));
     weights_no_zeros = particles.relative_particle_weights;

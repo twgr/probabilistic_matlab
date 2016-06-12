@@ -64,7 +64,8 @@ switch inference_type
         local_default_values = {true,1,false};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
                 
-        [samples, log_Zs] = smc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
+        [samples, log_Z_total, log_Zs] = smc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
+        other_outputs.log_Z_total = log_Z_total;
         other_outputs.log_Zs = log_Zs;
         
     case 'pimh'
@@ -72,7 +73,8 @@ switch inference_type
         local_default_values = {true};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         
-        [samples, log_Zs, b_accept] = pimh(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
+        [samples, acceptance_ratio, log_Zs, b_accept] = pimh(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
+        other_outputs.acceptance_ratio = acceptance_ratio;
         other_outputs.log_Zs = log_Zs;
         other_outputs.b_accept = b_accept;
         
@@ -89,30 +91,30 @@ switch inference_type
         local_default_values = {true,[]};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         
-        [samples, log_Zs, b_accept] = a_pgibbs(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});       
+        [samples, log_Zs, iKept] = a_pgibbs(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});       
         other_outputs.log_Zs = log_Zs;
-        other_outputs.b_accept = b_accept;
+        other_outputs.iKept = iKept;
         
     case 'indepedent_nodes'
         local_option_names = {'b_Rao_Black','b_parallel','Ms','initial_retained_particles'};
-        local_default_values = {true, true, [32,0,0], []};
+        local_default_values = {true32, true, 16, []};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         
-        [samples, log_Zs, b_accept] = mhalfhalf_pmcmc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
+        [samples, acceptance_ratios, log_Zs] = mhalfhalf_pmcmc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
         other_outputs.log_Zs = log_Zs;
-        other_outputs.b_accept = b_accept;
+        other_outputs.acceptance_ratios = acceptance_ratios;
         
     case 'ipmcmc'
         
-        local_option_names = {'b_Rao_Black','b_parrallel','M','P','n_conditional_gibbs_cycles','initial_retained_particles'};        
-        local_default_values = {true, true, 32, 16, 1, []};
+        local_option_names = {'M','b_parallel','P','b_Rao_Black','n_conditional_gibbs_cycles','initial_retained_particles'};        
+        local_default_values = {32, true, 16, true, 1, []};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         
-        [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ipmcmc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:}); 
+        [samples, switching_rate, log_Zs, node_weights, sampled_indices] = ipmcmc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:}); 
+        other_outputs.switching_rate = switching_rate;
         other_outputs.log_Zs = log_Zs;
         other_outputs.node_weights = node_weights;
         other_outputs.sampled_indices = sampled_indices;
-        other_outputs.switching_rate = switching_rate;
                 
     otherwise
         error('Invalid inference type.');
