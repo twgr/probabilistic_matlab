@@ -1,6 +1,6 @@
 function [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ...
-    ipmcmc(sampling_functions,weighting_functions,N,n_iter,b_compress,b_Rao_Black,...
-    b_parrallel,M,P,n_conditional_gibbs_cycles,initial_retained_particles)
+    ipmcmc(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,...
+    b_Rao_Black,b_parrallel,M,P,n_conditional_gibbs_cycles,initial_retained_particles)
 %ipmcmc  iPMCMC inference algorithm
 %
 % Performs inference using interacting particle Markov chain Monte Carlo.
@@ -18,6 +18,8 @@ function [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ...
 %   sampling_functions = See infer.m
 %   weighting_functions = See infer.m
 %   N (+ve integer) = Number of particles, also N in paper
+%   resample_method = Method used in resampling.  See resample_particles.m.
+%                     If empty takes default from resample_particles.m
 %   n_iter (+ve integer) = Number of MCMC iterations (indexed by r in the paper)
 %   b_compress (boolean) = Whether to use compress_samples
 %   b_Rao_Black (boolean | 'cond_update_only') = Controls level of
@@ -96,12 +98,12 @@ for iter=1:n_iter
     if b_parrallel
         parfor node = 1:M
             [particles_iter{node},log_Zs_iter(node),new_retained_particle{node}] = ...
-                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},false,b_Rao_Black_particle_choice);
+                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},resample_method,false,b_Rao_Black_particle_choice);
         end
     else
         for node = 1:M
             [particles_iter{node},log_Zs_iter(node),new_retained_particle{node}] = ...
-                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},false,b_Rao_Black_particle_choice);
+                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},resample_method,false,b_Rao_Black_particle_choice);
         end
     end
     
@@ -139,30 +141,8 @@ for iter=1:n_iter
     c_old = c;
     
     if iter==1
-        %% Memory management once have information from the first iteration
-        if ~b_compress && b_Rao_Black
-            % If Rao Blackwellizing but not compressing, do some checks
-            % that there will be enough memory for alll the samples.  Turn
-            % compression on if in danger to avoid swamping / crashing.
-            S = whos('samples');
-            s_mem = S.bytes*n_iter;
-            if s_mem>5e7
-                try
-                    memory_stats = memory;
-                    largest_array = memory_stats.MaxPossibleArrayBytes;
-                catch
-                    % memory function is only availible in windows
-                    largest_array = 4e9;
-                end
-                if S.bytes*n_iter > (largest_array/20)
-                    warning('In danger of swamping memory and crashing, turning b_compress on');
-                    b_compress = true;
-                    for m=1:size(samples,2)
-                        samples(1,m) = compress_samples(samples(1,m), numel(sampling_functions));
-                    end
-                end
-            end
-        end
+        % Memory management once have information from the first iteration
+        [samples,b_compress] = memory_check(samples,n_iter,numel(sampling_functions));
         % Preallocate space for the other samples
         samples = repmat(samples,n_iter,1);
     end

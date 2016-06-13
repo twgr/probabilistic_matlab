@@ -1,5 +1,5 @@
 function [samples, log_Zs, b_accept] = a_pgibbs(sampling_functions,weighting_functions,...
-                              N,n_iter,b_compress,b_Rao_Black,initial_retained_particle)
+                              N,resample_method,n_iter,b_compress,b_Rao_Black,initial_retained_particle)
 %a_pgibbs   Alternate move particle Gibbs 
 %
 % Carries out the alternate move particle Gibbs (APG) algorithm which
@@ -10,6 +10,8 @@ function [samples, log_Zs, b_accept] = a_pgibbs(sampling_functions,weighting_fun
 %   sampling_functions = See infer.m
 %   weighting_functions = See infer.m
 %   N (+ve integer) = Number of particles, also N in paper
+%   resample_method = Method used in resampling.  See resample_particles.m.
+%                     If empty takes default from resample_particles.m
 %   n_iter (+ve integer) = Number of iterations
 %   b_compress (boolean) = Whether to use compress_samples
 %   b_Rao_Black (boolean) = Whether to Rao-Blackwellize and return all
@@ -46,7 +48,7 @@ for iter=1:n_iter
         % rather than smc_sweep because of requiring the sampling of a new
         % retained particle at the end of the sweep
         [sample_proposed, log_Z_proposed, retained_particle_proposed] ...
-            = pg_sweep(sampling_functions,weighting_functions,N,[],b_compress,b_Rao_Black);
+            = pg_sweep(sampling_functions,weighting_functions,N,[],resample_method,b_compress,b_Rao_Black);
         bKeep = rand<min(1,exp(log_Z_proposed-log_Zs(iter-1)));
         if bKeep
             samples(iter) = sample_proposed; %#ok<AGROW>
@@ -60,32 +62,12 @@ for iter=1:n_iter
     else
         % At the odd steps, carry out a PG step
         [samples(iter), log_Zs(iter), retained_particle] ...
-            = pg_sweep(sampling_functions,weighting_functions,N,retained_particle,b_compress,b_Rao_Black); %#ok<AGROW>
+            = pg_sweep(sampling_functions,weighting_functions,N,retained_particle,resample_method,b_compress,b_Rao_Black); %#ok<AGROW>
     end
     
     if iter==1
-        %% Memory management once have information from the first iteration
-        if b_Rao_Black && ~b_compress
-            S = whos('samples');
-            s_mem = S.bytes*n_iter;
-            if s_mem>5e7
-                
-                try
-                    memory_stats = memory;
-                    largest_array = memory_stats.MaxPossibleArrayBytes;
-                catch
-                    % memory function is only availible in windows
-                    largest_array = 4e9;
-                end
-                
-                if S.bytes*n_iter > (largest_array/20)
-                    warning('In danger of swamping memory and crashing, turning b_compress on');
-                    b_compress = true;
-                    samples = compress_samples(samples, numel(sampling_functions));
-                end
-            end
-        end
-        
+        % Memory management once have information from the first iteration
+        [samples,b_compress] = memory_check(samples,n_iter,numel(sampling_functions));
         samples = repmat(samples,n_iter,1);
     end
     

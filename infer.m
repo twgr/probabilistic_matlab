@@ -13,8 +13,8 @@ other_outputs = struct;
 
 eval(['[sampling_functions,weighting_functions] = ' model_file_name '(model_inputs);']);
 
-global_option_names = {'n_particles','n_iter','b_compress'};
-global_default_values = {100, 100, 'default'};
+global_option_names = {'n_particles','resample_method','n_iter','b_compress'};
+global_default_values = {100, 'stratified', 100, 'default'};
 global_option_values = process_options(global_option_names,global_default_values,varargin{:});
 n_particles = global_option_values{strcmpi(global_option_names,'n_particles')};
 n_iter = global_option_values{strcmpi(global_option_names,'n_iter')};
@@ -60,8 +60,8 @@ end
 
 switch inference_type
     case 'smc'
-        local_option_names = {'b_parallel','n_islands','b_online_compression'};
-        local_default_values = {true,1,false};
+        local_option_names = {'b_parallel','n_islands','prop_sub_sample'};
+        local_default_values = {true,1,1};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
                 
         [samples, log_Zs] = smc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});

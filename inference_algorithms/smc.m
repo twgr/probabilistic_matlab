@@ -1,5 +1,5 @@
 function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
-                        N,n_iter,b_compress,b_parallel,n_islands,b_online_compression)
+                        N,resample_method,n_iter,b_compress,b_parallel,n_islands,prop_sub_sample)
 %smc    Independent SMC algorithm
 %
 % Performs SMC inference using independent sweeps.  See section 2.1 in the
@@ -16,6 +16,8 @@ function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
 %   sampling_functions = See infer.m
 %   weighting_functions = See infer.m
 %   N (+ve integer) = Number of particles, also N in paper
+%   resample_method = Method used in resampling.  See resample_particles.m.
+%                     If empty takes default from resample_particles.m
 %   n_iter = Number of independent sweeps to perform
 %   b_compress (boolean) = Whether to use compress_samples
 %   b_parallel (boolean) = Whether to run sweeps in parallel (number of
@@ -23,12 +25,11 @@ function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
 %   n_islands (+ve integer) = Number of equally weighted islands to use as
 %                        explained above.  The standard independent smc
 %                        algorithm corresponds to n_islands=1 (Default = 1)
-%   b_online_compression (boolean) = 
-%                        Takes the sparsity exploitation to the next level
-%                        by compressing on-the-fly after each step in the
-%                        state sequence.  Note that this incurs significant
-%                        computational overhead and should be avoided
-%                        whenever possible. (Default = false)
+%   prop_sub_sample (0<x<=1) = Proportion of samples to return.  For memory
+%                     reasons it may be beneficial to subsample the 
+%                     produced particles down to a smaller number (similar
+%                     to not Rao-Blackwellizing for pmcmc methods).
+%                               Default = 1;
 %
 % Outputs:
 %   samples = Object array of type stack_object containing details about
@@ -37,55 +38,31 @@ function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
 %
 % Tom Rainforth 12/06/16
 
-if ~exist('n_islands','var')
-    n_islands = 1;
-end
-
-if ~exist('b_online_compression','var')
-    b_online_compression = false;
-end
-
-if b_online_compression && b_compress
-    warning('b_online_compression does its own compression, no extra compression required');
-    b_compress = false;
-end
+if ~exist('b_compress','var') || isempty(b_compress); b_compress = false; end
+if ~exist('b_parallel','var') || isempty(b_parallel); b_parallel = true; end
+if ~exist('n_islands','var') || isempty(n_islands); n_islands = 1; end
+if ~exist('prop_sub_sample','var') || isempty(prop_sub_sample); prop_sub_sample = 1; end
 
 n_total = n_iter*n_islands;
 
 % First sweep to use in initialization
 log_Zs = NaN(n_total,1);
-[samples, log_Zs(1)] = smc_sweep(sampling_functions,weighting_functions,N,b_compress,b_online_compression);
+[samples, log_Zs(1)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,prop_sub_sample);
 
 % Memory management
 if ~b_compress    
-    S = whos('samples');
-    s_mem = S.bytes*n_total;
-    if s_mem>5e7
-        try
-            memory_stats = memory;
-            largest_array = memory_stats.MaxPossibleArrayBytes;
-        catch
-            % memory function is only availible in windows
-            largest_array = 4e9;
-        end
-        
-        if S.bytes*n_total > (largest_array/20)
-            warning('In danger of swamping memory and crashing, turning b_compress on');
-            b_compress = true;
-            samples = compress_samples(samples, numel(sampling_functions));
-        end
-    end
+    [samples,b_compress] = memory_check(samples,n_total,numel(sampling_functions));
 end
 samples = repmat(samples,n_total,1);
 
 % Carry out independent sweeps
 if b_parallel
     parfor iter=2:n_total
-        [samples(iter), log_Zs(iter)] = smc_sweep(sampling_functions,weighting_functions,N,b_compress,b_online_compression);
+        [samples(iter), log_Zs(iter)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,prop_sub_sample);
     end
 else
     for iter=2:n_total
-        [samples(iter), log_Zs(iter)] = smc_sweep(sampling_functions,weighting_functions,N,b_compress,b_online_compression);
+        [samples(iter), log_Zs(iter)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,prop_sub_sample);
     end
 end
 
