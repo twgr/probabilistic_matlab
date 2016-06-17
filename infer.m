@@ -104,7 +104,7 @@ switch inference_type
         
     case 'ipmcmc'
         
-        local_option_names = {'b_Rao_Black','b_parrallel','M','P','n_conditional_gibbs_cycles','initial_retained_particles'};        
+        local_option_names = {'b_Rao_Black','b_parallel','M','P','n_conditional_gibbs_cycles','initial_retained_particles'};        
         local_default_values = {true, true, 32, 16, 1, []};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         

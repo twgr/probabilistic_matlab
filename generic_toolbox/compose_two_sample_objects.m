@@ -50,7 +50,14 @@ for n_v = 1:numel(variables)
      if any(strcmpi(fields_2,variables{n_v})) && ~isempty(i_preorder_2)
         X_2.var.(variables{n_v}) = X_2.var.(variables{n_v})(i_preorder_2,:);
     end
-            
+    
+    if n_1==0
+        X.var.(variables{n_v})(i_assign,:) = X_1.var.(variables{n_v});
+        continue
+    elseif n_2==0
+        X.var.(variables{n_v})(i_assign,:) = X_2.var.(variables{n_v});
+        continue
+    end
     
     if any(strcmpi(fields_1,variables{n_v})) && any(strcmpi(fields_2,variables{n_v}))
         if (size(X_1.var.(variables{n_v}),2)==size(X_2.var.(variables{n_v}),2)) && strcmp(class(X_1.var.(variables{n_v})),class(X_2.var.(variables{n_v})))

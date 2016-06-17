@@ -66,7 +66,7 @@ for n=1:nrows;
                 w = w(i_samples:end);
             else
                 X = X(i_samples);
-                w = w(i_samples:end);
+                w = w(i_samples);
             end
         end
         

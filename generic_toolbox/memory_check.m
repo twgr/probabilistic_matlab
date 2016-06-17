@@ -16,6 +16,8 @@ function [samples,b_compress] = memory_check(samples,n_to_take,n_sampling_functi
 %
 % Tom Rainforth 13/06/16
 
+b_compress = false;
+
 S = whos('samples');
 s_mem = S.bytes*n_to_take;
 if s_mem>5e7
@@ -27,7 +29,7 @@ if s_mem>5e7
         largest_array = 4e9;
     end
     
-    if S.bytes*n_total > (largest_array/20)
+    if S.bytes*n_to_take > (largest_array/20)
         warning('In danger of swamping memory and crashing, turning b_compress on');
         b_compress = true;
         samples = compress_samples(samples, n_sampling_functions);

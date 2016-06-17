@@ -1,6 +1,6 @@
 function [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ...
     ipmcmc(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,...
-    b_Rao_Black,b_parrallel,M,P,n_conditional_gibbs_cycles,initial_retained_particles)
+    b_Rao_Black,b_parallel,M,P,n_conditional_gibbs_cycles,initial_retained_particles)
 %ipmcmc  iPMCMC inference algorithm
 %
 % Performs inference using interacting particle Markov chain Monte Carlo.
@@ -95,7 +95,7 @@ for iter=1:n_iter
     % Call the pg_sweep for each node.  When their is a retained particle
     % this is a csmc sweep, when there is none it is an ordinary
     % unconditional smc sweep.
-    if b_parrallel
+    if b_parallel
         parfor node = 1:M
             [particles_iter{node},log_Zs_iter(node),new_retained_particle{node}] = ...
                 pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},resample_method,false,b_Rao_Black_particle_choice);

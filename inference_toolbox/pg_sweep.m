@@ -134,6 +134,8 @@ for n=1:numel(sampling_functions)
     end
 end
 
+z_max = max(log_weights);
+w = exp(log_weights-z_max);
 particles.relative_particle_weights = w/sum(w);
 
 % Reset the sample_size variable

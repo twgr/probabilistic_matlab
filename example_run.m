@@ -43,7 +43,7 @@ data_nlss = load('example_models\non_linear_state_space_data\Wn_equals_1\nonline
 n_steps = 20;
 model_info.observations = data_nlss.Y(1:n_steps)';
 n_iter = 20;
-samples_nlss = infer('nonlinear_state_space',model_info,'ipmcmc','n_particles',10000,'n_iter',n_iter,'n_nodes',16,'n_csmc',5,'b_parallel',false);
+samples_nlss = infer('nonlinear_state_space',model_info,'ipmcmc','n_particles',10000,'n_iter',n_iter,'M',16,'P',5,'b_parallel',false);
  
 histogram_plotter(samples_nlss,'x',5,4,1:20,300);
 ESS = ess(samples_nlss,'x')/n_iter;
