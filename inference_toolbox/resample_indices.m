@@ -47,9 +47,9 @@ else
         case 'multinomial'
             drawsForResample = rand(n_samples,1);
         case 'stratified'
-            drawsForResample = rand(n_samples,1)+(0:(n_samples-1))'/n_samples;
+            drawsForResample = rand(n_samples,1)/n_samples+(0:(n_samples-1))'/n_samples;
         case 'systematic'
-            drawsForResample = rand+(0:(n_samples-1))'/n_samples;
+            drawsForResample = rand/n_samples+(0:(n_samples-1))'/n_samples;
         otherwise
             error('Unrecognized resampling method');
     end

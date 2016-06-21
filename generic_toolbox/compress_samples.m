@@ -28,6 +28,13 @@ function particles = compress_samples(particles, T)
 %
 % Tom Rainforth 08/06/16
 
+if numel(particles)~=1
+    for n=1:numel(particles)
+        particles(n) = compress_samples(particles(n), T);
+    end
+    return
+end
+
 p_fields = fields(particles.var);
 
 b_zero_weight = particles.relative_particle_weights==0;

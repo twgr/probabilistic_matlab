@@ -39,7 +39,7 @@ disp(['HMM scaled distance to truth ' num2str(densities_hmm_distance)]);
 
 %% Nonlinear state space model with dpg inference
 
-data_nlss = load('example_models\non_linear_state_space_data\Wn_equals_1\nonlinear_state_space_generate_data1.mat');
+data_nlss = load(['example_models' filesep() 'non_linear_state_space_data' filesep() 'Wn_equals_1' filesep() 'nonlinear_state_space_generate_data1.mat']);
 n_steps = 20;
 model_info.observations = data_nlss.Y(1:n_steps)';
 n_iter = 20;

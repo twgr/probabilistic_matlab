@@ -1,4 +1,41 @@
 function samples = infer(model_file_name,model_inputs,inference_type,varargin) %#ok<INUSL>
+%infer
+%
+% Entry function for performing inference using toolbox.  Operates on
+% problems written in the required format by providing the path to the
+% file.  Calling this model file generates the sampling_functions and
+% weighting_functions cell array of anonymous functions that specify the
+% model in the format required by the inference algorithms.
+%
+% Inputs:
+%   model_file_name = Path to target model.  See example_run.m or
+%                     example_models folder
+%   model_inputs = Input as required by the model function.  If multiple
+%                  inputs are required, these should be combined into a
+%                  structure both here and in the model code
+%   inference_type = Algorithm to use.  Currently supported:
+%              'ipmcmc','smc','pimh','pgibbs','a_gibbs','indepedent_nodes'
+%   varargin = Series of option name add values
+%       - 'no_path_add' somewhere in the options means the path adding is
+%          skipped
+%       - Others should all be in pairs of name - value, for example 
+%               'n_particles',1e5,'n_iter',1000
+%       - Options for all algorithms, Allowed values (Default)
+%              n_particles, +ve integere >=2 (1000)
+%              resample_method, 'stratified' | 'multinomial' | 'systematic'
+%                               | 'residual' ('stratified')
+%              n_iter, +ve integere >=1 (100)
+%              b_compress, 0 | false | 1 | true | 'default' | 'end_only'
+%                          ('default', this looks at the other inputs and 
+%                           estimates whether we should compress)
+%       - For algorithm specific options see functions for individual
+%         algorithms
+%
+% Outputs:
+%   samples = Object of type stack_object that stores details of outputs
+%             and forms input to most of postprocesssing functions
+% 
+% Tom Rainforth 20/06/16
 
 i_path_add = find(strcmpi(varargin,'no_path_add'));
 if isempty(i_path_add)
