@@ -13,7 +13,8 @@ classdef primitive_template
     end
     
     methods
-        
+
+        %% Required
         function obj = primitive_template(property_1,property_2)
             % Constructor.  The design of this is flexible but the returned
             % object must contain all the information required to execute
@@ -27,9 +28,7 @@ classdef primitive_template
             obj.property_2 = property_2;
         end
         
-        function vals = sample(obj)
-            global sample_size;
-            
+        function vals = draw(obj,n_draws)
             % This assert is common and ensures that properties are either
             % inline with the size of the sample_size or have first
             % dimension 1
@@ -39,9 +38,11 @@ classdef primitive_template
             vals = ; % Sampled values
         end
         
-        function log_p = observe(obj,vals)
+        function log_p = log_pdf(obj,vals)
             log_p = ; % Log likelihood of values
         end
+        
+        %% Not currently directly used by inference alogrithms
         
         function p = pdf(obj,vals)
             p = ; % Probabilitiy denisty function (=exp(obj.observe,vals))

@@ -1,4 +1,4 @@
-classdef gamma_class
+classdef gamma_class < base_primitive
     properties
         k       % shape parameter
         theta   % scale parameter - note this is 1/rate which is used in Anglican
@@ -11,16 +11,14 @@ classdef gamma_class
             obj.theta = theta;
         end
         
-        function vals = sample(obj)
-            global sample_size;
-            
-            assert(any(size(obj.k,1)==[1,sample_size]) && any(size(obj.theta,1)==[1,sample_size]),...
+        function vals = draw(obj,n_draws)            
+            assert(any(size(obj.k,1)==[1,n_draws]) && any(size(obj.theta,1)==[1,n_draws]),...
                 'Obj must either have single value for parameters or the same number as wish to be sampled');
             
-            vals = gamrnd(obj.k,obj.theta,sample_size,1);
+            vals = gamrnd(obj.k,obj.theta,n_draws,1);
         end
         
-        function log_p = observe(obj,vals)
+        function log_p = log_pdf(obj,vals)
             log_p = bsxfun(@minus,bsxfun(@minus,bsxfun(@times,obj.k-1,log(vals)),...
                 bsxfun(@rdivide,vals,obj.theta)),...
                 gammaln(obj.k)+obj.k.*log(obj.theta));

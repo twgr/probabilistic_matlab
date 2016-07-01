@@ -1,7 +1,7 @@
 function particles = compress_samples(particles, T)
 %compress_samples
 %
-% Exploits the degeneracy caused by resampling to store the output using 
+% Exploits the degeneracy caused by resampling to store the output using
 % sparse matrices and an implicit ancestral lineage.  This lineage is coded
 % by the ordering of the samples - when a sample value is empty (signified
 % by equalling zero in a the sparse array), it takes the value of the
@@ -11,7 +11,7 @@ function particles = compress_samples(particles, T)
 % for discrete variables some previous time point) need to be stored,
 % giving massive memory gains for long state sequences.  The particle
 % weights are now also stored as a sparse array, will weights collapsed
-% onto the sample where the variable values are provided.  The provided 
+% onto the sample where the variable values are provided.  The provided
 % output processing functions are overloaded to deal with this compressed
 % format.  Care should be taken as a consequence of the coding, things such
 % as naively taking the mean will give incorrect answers - the provided
@@ -78,7 +78,7 @@ if (all(bFullWidth) && any(bContinuous)) || (numel(bFullWidth)==1)
     [sX1,sX2] = size(particles.var.(p_fields{var_to_use}));
     bUnique = [true(1,sX2);diff(particles.var.(p_fields{var_to_use}),[],1)~=0];
     if ~isempty(iDiscrete)
-        % In the discrete case more care is required   
+        % In the discrete case more care is required
         for n_this = 2:sX2
             bUnique(:,n_this) = bUnique(:,n_this) | bUnique(:,n_this-1);
         end
@@ -89,9 +89,13 @@ if (all(bFullWidth) && any(bContinuous)) || (numel(bFullWidth)==1)
         vars_this = particles.var.(p_fields{n_f})(indsU);
         b_zero = vars_this==0;
         if any(b_zero)
-            warning('Zero values have been changed to 1e-32 in the compression');
+            warning('ZERO:WARN','Zero values have been changed to 1e-32 in the compression');
+            [~,msgId] = lastwarn;
+            if ~isempty(msgId)
+                warning('off',msgId);
+            end
             vars_this(b_zero) = 1e-32;
-        end       
+        end
         particles.var.(p_fields{n_f}) = sparse(iU,jU,vars_this,sX1,sX2);
     end
     try
@@ -104,8 +108,8 @@ if (all(bFullWidth) && any(bContinuous)) || (numel(bFullWidth)==1)
     end
     i_iU1 = iU==1;
     rel_w_1 = cumsum_relative_weights(iU);
-    rel_w_2 = [cumsum_relative_weights(iU(2:end));0];
-    rel_w_2([i_iU1(2:end);false]) = 0;
+    rel_w_2 = [cumsum_relative_weights(iU(2:end,:));zeros(1,size(iU,2))];
+    rel_w_2([i_iU1(2:end,:);false(1,size(iU,2))]) = 0;
     weights_this = rel_w_1-rel_w_2;
     b_zero = weights_this==0;
     if any(b_zero)
@@ -129,7 +133,7 @@ else
     [sX1,sX2] = size(all_variables);
     bUnique = [true(1,sX2);diff(all_variables,[],1)~=0];
     if ~isempty(iDiscrete)
-        % In the discrete case more care is required   
+        % In the discrete case more care is required
         for n_this = 2:sX2
             bUnique(:,n_this) = bUnique(:,n_this) | bUnique(:,n_this-1);
         end
@@ -149,7 +153,11 @@ else
         vars_this = all_variables(indsU(bThis));
         b_zero = vars_this==0;
         if any(b_zero)
-            warning('Zero values have been changed to 1e-32 in the compression');
+            warning('ZERO:WARN','Zero values have been changed to 1e-32 in the compression');
+            [~,msgId] = lastwarn;
+            if ~isempty(msgId)
+                warning('off',msgId);
+            end
             vars_this(b_zero) = 1e-32;
         end
         particles.var.(p_fields{n_f}) = sparse(iU(bThis),jU(bThis),vars_this,sX1,variable_sizes(n_f,2));
@@ -165,7 +173,7 @@ else
         particles.sparse_variable_relative_weights.(p_fields{n_f}) = sparse(iU(bThis),jU(bThis),weights_this,sX1,variable_sizes(n_f,2));
         
         iU = iU(~bThis);
-        jU = jU(~bThis)-variable_sizes(n_f,2); 
+        jU = jU(~bThis)-variable_sizes(n_f,2);
         all_variables = all_variables(:,variable_sizes(n_f,2)+1:end);
         if n_f~=numel(p_fields)
             indsU = sub2ind([sX1,size(all_variables,2)],iU,jU);

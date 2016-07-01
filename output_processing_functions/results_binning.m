@@ -2,17 +2,17 @@ function [densities,edges] = results_binning(samples,field,d_start,d_end,n_bins_
 
 densities = cell(1+d_end-d_start,1);
 
-if iscell(n_bins_or_edges)
-    edges = n_bins_or_edges;
-    if numel(edges)==1
-        edges = repmat(edges,1+d_end-d_start,1);
-    end
-elseif isnumeric(n_bins_or_edges) && ~isscalar(n_bins_or_edges)
-    edges = repmat({n_bins_or_edges},1+d_end-d_start,1);
-else
+if isscalar(n_bins_or_edges)
+    n_bins = n_bins_or_edges;
     edges = cell(1+d_end-d_start,1);
+else
+    if b_discrete
+        n_bins = numel(n_bins_or_edges);
+    else
+        n_bins = numel(n_bins_or_edges)-1;
+    end
+    edges = repmat({n_bins_or_edges},1+d_end-d_start,1);
 end
-
 
 for d=d_start:d_end
     if issparse(samples.var.(field))
@@ -21,19 +21,15 @@ for d=d_start:d_end
         X = samples.var.(field)(:,d);
     end
     
-    if isnumeric(n_bins_or_edges) && isscalar(n_bins_or_edges)
+    if isscalar(n_bins_or_edges)
         maxX = max(X);
         minX = min(X);
-        if minX==maxX
-            if minX>0
-                minX = 0.5*minX;
-                maxX = 2*maxX;
-            else
-                minX = 2*minX;
-                maxX = 0.5*maxX;
-            end
-        end
-        edges{d}=(linspace(minX,maxX,n_bins_or_edges));
+        if ~b_discrete
+            maxX = minX+(1/n_bins_or_edges)*(maxX-minX);
+            edges{d}=(linspace(minX,maxX,n_bins_or_edges+1));
+        else
+            edges{d}=(linspace(minX,maxX,n_bins_or_edges));
+        end        
     else
         minX = min(edges{d}(1),edges{d}(end));
         maxX = max(edges{d}(1),edges{d}(end));
@@ -62,8 +58,9 @@ for d=d_start:d_end
     
     [~, bin_assignment] = histc(full(X),edges{d});
     counts = accumarray(bin_assignment,w);
-    densities{d} = counts*numel(counts)/(maxX-minX);
-    
+    densities{d} = zeros(n_bins,1);
+    den_incomp = counts*numel(counts)/(maxX-minX);
+    densities{d}(1:(min(n_bins,numel(den_incomp)))) = den_incomp(1:(min(n_bins,numel(den_incomp))));
 end
 
 densities = [densities{:}]';

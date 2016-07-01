@@ -168,6 +168,9 @@ end
 function option_values = process_options(option_names,default_values,varargin)
 option_values = default_values;
 
+% TODO add a check for spurious options 
+
+% Set the options
 for n=1:numel(option_names);
     bEqual = strcmpi(varargin,option_names{n});
     if any(bEqual)

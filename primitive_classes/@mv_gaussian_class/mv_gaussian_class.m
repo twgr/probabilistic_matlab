@@ -1,4 +1,4 @@
-classdef mv_gaussian_class
+classdef mv_gaussian_class < base_primitive
     properties
         mu      % Always an array of size NxM
         sigma   % Can either be one array for all possible mu, or a MxMxN
@@ -40,21 +40,19 @@ classdef mv_gaussian_class
            obj.log_norm_constant = 0.5*size(obj.mu,2)*log(2*pi)+0.5*log(obj.det_sigma);
         end
         
-        function vals = sample(obj)
-            global sample_size;
-            
-            assert(any(size(obj.mu,1)==[1,sample_size]) && any(size(obj.sigma,3)==[1,sample_size]),...
+        function vals = draw(obj,n_draws)
+            assert(any(size(obj.mu,1)==[1,n_draws]) && any(size(obj.sigma,3)==[1,n_draws]),...
                         'Obj must either have single value for parameters or the same number as wish to be sampled');
             if ismatrix(obj.chol_sigma)
-               vals = bsxfun(@plus,obj.mu,randn(sample_size,size(obj.mu,2))*obj.chol_sigma);
+               vals = bsxfun(@plus,obj.mu,randn(n_draws,size(obj.mu,2))*obj.chol_sigma);
             else
                vals = bsxfun(@plus,obj.mu,...
-                                squeeze(sum(bsxfun(@times,randn(sample_size,size(obj.mu,2)),...
+                                squeeze(sum(bsxfun(@times,randn(n_draws,size(obj.mu,2)),...
                                                   permute(obj.chol_sigma,[3,1,2])),2)));
             end
         end
         
-        function log_p = observe(obj,vals)            
+        function log_p = log_pdf(obj,vals)            
             d = bsxfun(@minus,vals,obj.mu);
             if ismatrix(obj.chol_sigma_inv)
                 s = d*obj.chol_sigma_inv;

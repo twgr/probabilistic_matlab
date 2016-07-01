@@ -71,18 +71,7 @@ for n=1:numel(sampling_functions)
     % final retained particle.
     variables_step{n} = fields(particles.var);
     for v=1:numel(variables_step{n})
-        if isnumeric(particles.var.(variables_step{n}{v})) || (size(particles.var.(variables_step{n}{v}),2)>1)
-            % Here we have an array so just need to store the second
-            % dimension which is constant for all samples
-            sizes_step{n}{v} = size(particles.var.(variables_step{n}{v}),2);
-        elseif iscell(particles.var.(variables_step{n}{v}))
-            % Here we have a n_samplesx1 size cell array so the size
-            % might be different within each cell and needs storing
-            % seperately
-            sizes_step{n}{v} = cellfun(@(x) size(x,2), particles.var.(variables_step{n}{v}));
-        else
-            sizes_step{n}{v} = 1;
-        end
+        sizes_step{n}{v} = size(particles.var.(variables_step{n}{v}),2);
     end
     
     if b_conditional_sweep
@@ -123,16 +112,11 @@ end
 
 % Sample the new retained particle (this is equivalent to resampling down
 % to a single particle)
-retained_particle = resample_particles(particles, log_weights, 1);
+[retained_particle,~,i_keep] = resample_particles(particles, log_weights, 1);
 
 % Store the variables that exist at each step and their sizes
 retained_particle.variables_step = variables_step;
 retained_particle.sizes_step = sizes_step;
-for n=1:numel(sampling_functions)
-    if ~(numel(retained_particle.sizes_step{n})==1)
-        retained_particle.sizes_step{n} = retained_particle.sizes_step{n}(i_keep);
-    end
-end
 
 z_max = max(log_weights);
 w = exp(log_weights-z_max);

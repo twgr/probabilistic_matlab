@@ -1,4 +1,4 @@
-classdef bernoulli_class
+classdef bernoulli_class < base_primitive
     properties
         p % can have multiple columns to simultaenously encode many bernoulli distributions for vectorization
     end
@@ -9,16 +9,11 @@ classdef bernoulli_class
             obj.p = p;
         end
         
-        function vals = sample(obj)
-            global sample_size
+        function vals = draw(obj,n_draws)
             
-            assert(any(size(obj.p,1)==[1,sample_size]),...
+            assert(any(size(obj.p,1)==[1,n_draws]),...
                 'Obj must either have single value for parameters or the same number as wish to be sampled');
-            vals = double(rand(sample_size,size(obj.p,2))<obj.p);
-        end
-        
-        function log_p = observe(obj,vals)
-            log_p = log(obj.pdf(vals));
+            vals = double(bsxfun(@lt,rand(n_draws,size(obj.p,2)),obj.p));
         end
         
         function p = pdf(obj,vals)
@@ -38,6 +33,10 @@ classdef bernoulli_class
                 p(vals==1) = obj.p(vals==1);
                 p(vals==0) = 1-obj.p(vals==0);
             end
+        end
+        
+        function log_p = log_pdf(obj,vals)
+            log_p = log(obj.pdf(vals));
         end
         
         function c = cdf(obj,vals)

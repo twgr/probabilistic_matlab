@@ -1,4 +1,4 @@
-classdef binomial_class
+classdef binomial_class < base_primitive
     properties
         p % Can have numerous columns
         n % Can have numerous columns
@@ -11,16 +11,10 @@ classdef binomial_class
             obj.n = n;
         end
         
-        function vals = sample(obj)
-            global sample_size;
-            
-            assert(any(size(obj.p,1)==[1,sample_size]) && any(size(obj.n,3)==[1,sample_size]),...
+        function vals = draw(obj,n_draws)
+            assert(any(size(obj.p,1)==[1,n_draws]) && any(size(obj.n,3)==[1,n_draws]),...
                 'Obj must either have single value for parameters or the same number as wish to be sampled');
-            vals = binornd(obj.n,obj.p,sample_size,1);
-        end
-        
-        function log_p = observe(obj,vals)
-            log_p = log(obj.pdf(vals));
+            vals = binornd(obj.n,obj.p,n_draws,1);
         end
         
         function p = pdf(obj,vals)

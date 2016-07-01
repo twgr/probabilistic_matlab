@@ -22,7 +22,7 @@ function [samples, log_Zs, b_accepts] = independent_nodes(sampling_functions,wei
 %                          threads automatically set by parfor)
 %   Ms (3x1 vector of +ve integers) = Number of nodes dedicated to
 %                          particle Gibbs, alternate move PG and PIMH
-%                          respectively.  For example, [0,32,0] corresponds
+%                          respectively.  For example, [0,0,32] corresponds
 %                          to mPIMH in the paper with M=32.
 %   initial_retained_particles (stack_object array) = Allows the algorithm 
 %                     to be initialized with a retained particle set.  If not

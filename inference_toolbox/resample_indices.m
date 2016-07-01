@@ -33,7 +33,7 @@ if strcmpi(method,'residual')
         i_base = [i_base;find(base_n_dec)]; %#ok<AGROW>
         base_n_dec = max(0,base_n_dec-1);
     end
-    if R==0
+    if R==n_samples
         n_times_sampled = base_n;
         i_resample = i_base;
     else
@@ -56,4 +56,7 @@ else
     edges = min([0;cumsum(w)],1);
     edges(end) = 1;
     [n_times_sampled,i_resample] = histc(drawsForResample,edges);
+    n_times_sampled = n_times_sampled(1:end-1);
+    i_resample = i_resample(:);
+    n_times_sampled = n_times_sampled(:);
 end

@@ -1,4 +1,4 @@
-classdef gaussian_1d_class
+classdef gaussian_1d_class < base_primitive
     properties
         mu
         sigma
@@ -11,16 +11,16 @@ classdef gaussian_1d_class
             obj.sigma   = sigma;
         end
         
-        function vals = sample(obj)
-            global sample_size;
-            
-            assert(any(size(obj.mu,1)==[1,sample_size]) && any(size(obj.sigma,1)==[1,sample_size]),...
+        function vals = draw(obj,n_draws)
+            assert(any(size(obj.mu,1)==[1,n_draws]) && any(size(obj.sigma,1)==[1,n_draws]),...
                 'Obj must either have single value for parameters or the same number as wish to be sampled');
-            vals = randn(sample_size,1)*obj.sigma+obj.mu;
+            vals = randn(n_draws,1)*obj.sigma+obj.mu;
         end
         
-        function log_p = observe(obj,vals)
-            log_p = log(obj.pdf(vals));
+        function log_p = log_pdf(obj,vals)
+            log_p = bsxfun(@minus,-0.5*log(2*pi*obj.sigma.^2),...
+                                  bsxfun(@rdivide,bsxfun(@minus,vals,obj.mu),...
+                                                  (sqrt(2))*obj.sigma).^2);
         end
         
         function p = pdf(obj,vals)

@@ -1,4 +1,4 @@
-classdef discrete_class
+classdef discrete_class < base_primitive
     properties
         p       % List of probabilities
     end
@@ -18,16 +18,10 @@ classdef discrete_class
             obj.cum_p = cumsum(vals,2); %#ok<MCSUP>
         end
         
-        function vals = sample(obj)
-            global sample_size
-            
-            assert(any(size(obj.p,1)==[1,sample_size]),...
+        function vals = draw(obj,n_draws)
+            assert(any(size(obj.p,1)==[1,n_draws]),...
                 'Obj must either have single value for parameters or the same number as wish to be sampled');
-            vals = sum(bsxfun(@gt,rand(sample_size,1),obj.cum_p),2)+1;
-        end
-        
-        function log_p = observe(obj,vals)
-            log_p = log(obj.pdf(vals));
+            vals = sum(bsxfun(@gt,rand(n_draws,1),obj.cum_p),2)+1;
         end
         
         function p = pdf(obj,vals)
@@ -40,6 +34,10 @@ classdef discrete_class
                 p = obj.p(i);
                 p = p(:);
             end
+        end
+        
+        function log_p = log_pdf(obj,vals)
+            log_p = log(obj.pdf(vals));
         end
         
         function c = cdf(obj,vals)
