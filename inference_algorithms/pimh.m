@@ -33,6 +33,8 @@ else
     prop_sub_sample = 1/N;
 end
 
+b_compress = b_compress && b_Rao_Black;
+
 [samples, log_Zs(1)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,prop_sub_sample);
 
 if ~b_compress
@@ -57,6 +59,10 @@ for iter=2:n_iter
         samples(iter) = samples(iter-1);
         log_Zs(iter) = log_Zs(iter-1);
         b_accept(iter) = false;
+    end
+    
+    if ~b_Rao_Black
+        samples(iter).relative_particle_weights = 1;
     end
 end
 

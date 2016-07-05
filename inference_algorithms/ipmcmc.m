@@ -86,6 +86,8 @@ switching_rate = NaN(n_iter,1);
 b_Rao_Black_particle_choice = ~strcmpi(b_Rao_Black,'cond_update_only') && b_Rao_Black;
 b_Rao_Black_conditional_node_choice = strcmpi(b_Rao_Black,'cond_update_only') || b_Rao_Black;
 
+b_compress = b_compress && b_Rao_Black_particle_choice;
+
 for iter=1:n_iter
     
     % Local space preallocation required for parfor
@@ -125,9 +127,9 @@ for iter=1:n_iter
                 samples(iter,m) = compress_samples(samples(iter,m),numel(weighting_functions)); %#ok<AGROW>
             end
         elseif m<=P
-            % No Rao Blackwellization. Add when m<=P.  relative_weights are
-            % all 1 which is indicated by leaving them blank.
+            % No Rao Blackwellization. Add when m<=P.
             samples(iter,m) = retained_particles{c(m)}; %#ok<AGROW>
+            samples(iter,m).relative_particle_weights = 1/P; %#ok<AGROW>
         else
             continue
         end
@@ -140,7 +142,7 @@ for iter=1:n_iter
     switching_rate(iter) = (P-numel(intersect(c,c_old)))/P;
     c_old = c;
     
-    if iter==1
+    if iter==1 && ~b_compress
         % Memory management once have information from the first iteration
         [samples,b_compress] = memory_check(samples,n_iter,numel(sampling_functions));
         % Preallocate space for the other samples

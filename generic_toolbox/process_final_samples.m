@@ -52,10 +52,4 @@ elseif ~isempty(samples_array(1).sparse_variable_relative_weights)
     end
 end
 
-if ~isempty(samples.relative_particle_weights) && ...
-        all(samples.relative_particle_weights==samples.relative_particle_weights(1))
-    samples.relative_particle_weights = [];
-end
-
-
 end

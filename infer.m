@@ -130,12 +130,12 @@ switch inference_type
         other_outputs.log_Zs = log_Zs;
         other_outputs.b_accept = b_accept;
         
-    case 'indepedent_nodes'
+    case 'independent_nodes'
         local_option_names = {'b_Rao_Black','b_parallel','Ms','initial_retained_particles'};
         local_default_values = {true, true, [32,0,0], []};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
         
-        [samples, log_Zs, b_accept] = mhalfhalf_pmcmc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
+        [samples, log_Zs, b_accept] = independent_nodes(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:});
         other_outputs.log_Zs = log_Zs;
         other_outputs.b_accept = b_accept;
         

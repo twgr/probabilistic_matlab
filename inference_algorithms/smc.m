@@ -18,7 +18,7 @@ function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
 %   N (+ve integer) = Number of particles, also N in paper
 %   resample_method = Method used in resampling.  See resample_particles.m.
 %                     If empty takes default from resample_particles.m
-%   n_iter = Number of independent sweeps to perform
+%   n_iter = Number of independent sweeps to perform for EACH island
 %   b_compress (boolean) = Whether to use compress_samples
 %   b_parallel (boolean) = Whether to run sweeps in parallel (number of
 %                          threads automatically set by parfor)

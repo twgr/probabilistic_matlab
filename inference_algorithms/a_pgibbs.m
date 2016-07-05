@@ -65,7 +65,7 @@ for iter=1:n_iter
             = pg_sweep(sampling_functions,weighting_functions,N,retained_particle,resample_method,b_compress,b_Rao_Black); %#ok<AGROW>
     end
     
-    if iter==1
+    if iter==1 && ~b_compress
         % Memory management once have information from the first iteration
         [samples,b_compress] = memory_check(samples,n_iter,numel(sampling_functions));
         samples = repmat(samples,n_iter,1);

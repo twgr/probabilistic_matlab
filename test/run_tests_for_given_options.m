@@ -4,8 +4,6 @@ function [branching_KL,gaussian_KL,hmm_distance] = run_tests_for_given_options(o
 
 samples_branching = infer('branching_model',[],options{:});
 
-error('Why are things not getting made sparse correctly for pgibbs');
-
 densities_branching_r = zeros(1,20);
 densities_branching_r(1:max(samples_branching.var.r)+1) = results_binning(samples_branching,'r',1,size(samples_branching.var.r,2),0:1:max(samples_branching.var.r),true);
 densities_branching_r_truth = [0.0209421460738810;0.120049724359027;0.0676937411893348;1.02017216903057e-09;1.00000000006526e-32;0.333292841871083;0.222305145210522;0.126917947983607;0.0633921064841567;0.0281583673328266;0.0112158251425169;0.00410248708336039;0.00135825297633444;0.000414215967343333;0.000116031661294933;3.05009697889260e-05;8.31844630607070e-06;1.49305446519218e-06;6.39880485082362e-07;2.13293495027454e-07]';
