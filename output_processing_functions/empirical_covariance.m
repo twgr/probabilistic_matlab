@@ -29,7 +29,7 @@ function C = empirical_covariance(samples,i_samples,bIgnoreNaN,varargin)
 %                                                 C_zx,C_zy,C_zz];
 %       where C_xx = [C_x2x2 C_x2x3; C_x3x2 C_x3x3] etc;
 %
-% Tom Rainforth 05/07/16
+% Tom Rainforth 06/07/16
 
 if isempty(i_samples)
     i_samples = (1:size(samples.var.(varargin{end}),1))';
