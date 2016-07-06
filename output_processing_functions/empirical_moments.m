@@ -1,19 +1,25 @@
 function varargout = empirical_moments(samples,orders,i_samples,bIgnoreNaN,varargin)
-%varargout = empirical_moments(samples,order,bIgnoreNaN,varargin)
+%varargout = empirical_moments(samples,order,i_samples,bIgnoreNaN,varargin)
 %
 % Calculations the moments of order orders the variables named in vararign 
-% within the sample set samples.  Outputs are grouped first by the same
-% varargin such that
-%   empirical_moment(samples,[1,3],true,'x',y')
-% returns [mean_x, skewness_x, mean_y, skewness_y]
+% within the sample set samples.  
 %
-% order = 1 : mean
+% Inputs: samples, orders, i_samples, bIgnoreNaN, varargin.
+%   All as per empirical_mean other than the order input:
+% order = 1 : mean.  As per empirical_mean
 % order = 2 : standard deviation
 % order = 3 : skewness
 % order = 4 : excess kurtosis
 % order = n (>4) : nth order moment given by
 %                       E[(X-muX).^n]./(std_dev.^n) with appropriate
 %                       weighting of the samples incorporated.
+%
+% Outputs: as per empriical_mean.  Results are grouped first by the same
+% varargin such that
+%   empirical_moment(samples,[1,3],[],true,'x',y')
+% returns [mean_x, skewness_x, mean_y, skewness_y]
+%
+% Tom Rainforth 05/07/16
 
 if ~exist('i_samples','var') || isempty(i_samples) || ischar(i_samples) || numel(i_samples)==1    
     if ischar(i_samples)
@@ -54,10 +60,9 @@ if numel(orders)==1 && orders==1
     return
 end
 
-n_samples = numel(i_samples);
 
 if isempty(samples.sparse_variable_relative_weights)
-    % This is the current case without compression
+    % No compression
     n_out = 1;
     
     for n=1:numel(varargin)        
@@ -91,7 +96,7 @@ if isempty(samples.sparse_variable_relative_weights)
         end
     end
 elseif isnumeric(samples.sparse_variable_relative_weights)
-    % Current case with compression but common sparsity structure
+    % Compression but common sparsity structure
     w = samples.sparse_variable_relative_weights(i_samples,:);
     sw = size(w);
     iNonZeros = find(w);

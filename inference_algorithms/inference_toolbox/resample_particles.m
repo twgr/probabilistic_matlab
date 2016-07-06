@@ -25,6 +25,9 @@ if ~exist('method','var') || isempty(method)
     method = [];
 end
 
+assert(isempty(particles.sparse_variable_relative_weights),...
+        'Cannot use the resample_particles function on an object that \n has already been compressed.  Use weighted_samples_to_unweighted instead / first');
+
 % Guard for numerical instability
 n_samples = round(n_samples);
 

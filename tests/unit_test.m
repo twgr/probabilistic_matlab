@@ -1,10 +1,10 @@
-clear all
+clear variables
 
-inference_algorithms = {'ipmcmc','pgibbs','pimh','a_pgibbs','smc','independent_nodes'};
+inference_algorithms = {'pgibbs','pimh','a_pgibbs','independent_nodes','ipmcmc','smc'};
 
 % Fixed options
-n_particles = 100;
-n_iter = 100;
+n_particles = 1000;
+n_iter = 20;
 b_parallel = true;
 M = 32;
 P = 16;
@@ -16,28 +16,27 @@ local_options_fixed.ipmcmc = {'M',M;
                               'b_parallel',b_parallel;
                               'n_particles',n_particles;
                               'n_iter',n_iter};
-local_options_fixed.pgibbs = {};
+local_options_fixed.pgibbs = {'n_particles',n_particles;
+                               'n_iter',n_iter};
 local_options_fixed.pimh =   {'n_particles',n_particles;
                               'n_iter',n_iter};
 local_options_fixed.a_pgibbs = {'n_particles',n_particles;
                                 'n_iter',n_iter};
 local_options_fixed.smc = {'n_particles',n_particles;
-                           'n_iter',n_iter*M;
                            'b_parallel',b_parallel};
 local_options_fixed.independent_nodes = {'n_particles',n_particles;
                                          'n_iter',n_iter;
                                          'b_parallel',b_parallel};
                                          
 % Common options to enumerate over
-common_options_enumerate = {'resample_method',{'stratified','multinomial','systematic','residual'};
-                            'b_compress',{true, false}};
+common_options_enumerate = {'b_compress',{true, false}};
 % Local options to enumerate over
-local_options_enumerate.ipmcmc = {'b_Rao_Black',{true,false}};
-local_options_enumerate.pgibbs = {'b_Rao_Black',{true,false};
-                                  {'n_particles','n_iter'},{{n_particles,n_iter},{n_particles*M,n_iter},{n_particles,n_iter*M}}};
-local_options_enumerate.pimh = {'b_Rao_Black',{true,false}};
+local_options_enumerate.ipmcmc = {'b_Rao_Black',{'cond_update_only',true,false}};
+local_options_enumerate.pgibbs = {'b_Rao_Black',{true,false}};
+local_options_enumerate.pimh = {'resample_method',{'residual','stratified','multinomial','systematic'};
+                                'b_Rao_Black',{true,false}};
 local_options_enumerate.a_pgibbs = {'b_Rao_Black',{true,false}};
-local_options_enumerate.smc = {'n_islands',{1,M};
+local_options_enumerate.smc = {{'n_islands','n_iter'},{{1,n_iter*M}, {M, n_iter}};
                                'prop_sub_sample',{1,1/n_particles}};
 local_options_enumerate.independent_nodes = {'b_Rao_Black',{true,false};
                                              'Ms',{[32,0,0],[0,32,0],[0,0,32],[16,0,16]}};
@@ -75,7 +74,11 @@ for n=1:numel(inference_algorithms)
     alg = inference_algorithms{n};
     [branching_KL.(alg),gaussian_KL.(alg),hmm_distance.(alg)] = deal(NaN(numel(options.(alg)),1));
     for m=1:numel(options.(alg))
+        disp([options.(alg){m}]);
+        tTest = tic;
         [branching_KL.(alg)(m),gaussian_KL.(alg)(m),hmm_distance.(alg)(m)] = run_tests_for_given_options(options.(alg){m});
-        disp([alg ' options set ' num2str(m) ' results
+        timeTest = toc(tTest);        
+        disp(['Results ' num2str([branching_KL.(alg)(m),gaussian_KL.(alg)(m),hmm_distance.(alg)(m)])]);
+        disp(['Time taken ' num2str(timeTest) ' seconds']);
     end
 end

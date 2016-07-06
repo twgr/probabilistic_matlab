@@ -2,7 +2,39 @@ classdef stack_object
 %stack_object
 %
 % Object used to store sampled variables, options, constant parameters,
-% particle weights and other outputs
+% particle weights and other outputs.  Can either represent a sinlge
+% particle or a 
+%
+% properties
+%   options = Inference options used in the form of a structure containing
+%             all possible options that could have been set and their
+%             values.
+%   con     = struct of variables that do not change between samples
+%   var     = struct of variables that vary between the sample.  For each
+%             variable the different rows correspond to the different
+%             samples, different columns are different dimensions of a
+%             variable.  When using the b_compress option, variables will
+%             be a sparse array with a special encoding for compression.
+%             In short, values not in the sparse array are equal to the
+%             value immediately above in the column.  More details are
+%             given by the compress_samples function.
+%             Ordering of samples are sorting by iteration first, then
+%             node, then sample within the node.
+%   relative_particle_weights 
+%           = Relative weight for each sample.
+%   sparse_variable_relative_weights
+%           = A collapsing of the relative_particle_weights to match the
+%             sparsity of the variables in var.  This allows things such as
+%             the empirical mean to be evaluated quickly using sparse 
+%             matrix calculations.
+%   other_outputs
+%           = Structure containing all additional outputs produced by an
+%             inference algorithm.  For example, iPMCMC returns for each
+%             node and iteration the marginal likelihoods (log_Z) and 
+%             the relative weight of the nodes (node_weights); and for each
+%             iteration the (sampled_indices) (i.e. c_j) and the
+%             (switching_rate).
+
     
     properties
         options % Inference options

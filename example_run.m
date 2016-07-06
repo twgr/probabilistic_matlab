@@ -18,7 +18,7 @@ legend('Output','Truth');
 
 samples_g = infer('gaussian_model',[],'pgibbs','n_particles',1e4,'n_iter',1e3,'b_compress',false);
 
-mu_g_out = empirical_mean(samples_g,'mu');
+mu_g_out = empirical_mean(samples_g,[],false,'mu');
 mu_g_truth = 7.25;
 sig_g_out = sqrt(empirical_covariance(samples_g,true,'mu'));
 sig_g_truth = sqrt(1/1.2);

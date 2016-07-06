@@ -33,7 +33,8 @@ function samples = infer(model_file_name,model_inputs,inference_type,varargin) %
 %
 % Outputs:
 %   samples = Object of type stack_object that stores details of outputs
-%             and forms input to most of postprocesssing functions
+%             and forms input to most of postprocesssing functions.  More
+%             details are given in the doc string for stack_object.m
 % 
 % Tom Rainforth 20/06/16
 

@@ -1,35 +1,49 @@
 function varargout = empirical_mean(samples,i_samples,bIgnoreNaN,varargin)
+%empirical_mean
+%
+% varargout = empirical_mean(samples,i_samples,bIgnoreNaN,varargin)
+% 
+% Calculates the empirical average of variables in a stack_object.
+% Averages are taken seperately across each dimension of the specified
+% variables.
+%
+% Inputs:
+%   samples = stack_object to take empirical mean from
+%   i_samples = Subset of particles to take in the average.  If left blank
+%               then all are used.
+%   bIgnoreNaN = If true NaNs will be ignored in the averaging, if false
+%                then the mean will be NaN if there is any NaN in the
+%                samples.  If left empty, defaults to false.
+%   varargin = Strings giving names of variables to take empirical mean
+%              for. One output is provided for each provided string. There
+%              are computational savings to making a single call to the
+%              function with many variables specified then making numerous
+%              calls.
+% Outputs:
+%   varargout = Empirical means.
+%
+%
+% Example
+%   [m_x,m_y] = emprical_mean(samples,[],false,'x','y');
+%   
+% Tom Rainforth 05/07/16
 
-if ~exist('i_samples','var') || isempty(i_samples) || ischar(i_samples) || numel(i_samples)==1    
-    if ischar(i_samples)
-        if exist('bIgnoreNaN','var')
-            varargin = [{i_samples},{bIgnoreNaN}, varargin];
-        else
-            varargin = {i_samples};
-        end
-        bIgnoreNaN = false;        
-    elseif numel(i_samples)==1
-        varargin = [{bIgnoreNaN}, varargin];
-        bIgnoreNaN = i_samples;
-    end
+if isempty(i_samples)
     i_samples = (1:size(samples.var.(varargin{end}),1))';
 end
 
-if ~exist('bIgnoreNaN','var') || isempty(bIgnoreNaN)
-    bIgnoreNaN = false;
-elseif ischar(bIgnoreNaN)
-    varargin = [{bIgnoreNaN}, varargin];
+if isempty(bIgnoreNaN)
     bIgnoreNaN = false;
 end
 
 if ~all(cellfun(@(x) isnumeric(samples.var.(x)), varargin))
-    error('Only valid for numeric variables');
+    error('empirical_mean can only be called for numeric variables');
 end
 
 varargout = cell(1,numel(varargin));
 
 if isempty(samples.sparse_variable_relative_weights)
-    % This is the current case without compression
+    % No compression
     for n=1:numel(varargin)
         
         X = samples.var.(varargin{n})(i_samples,:);
@@ -46,7 +60,7 @@ if isempty(samples.sparse_variable_relative_weights)
         varargout{n} = full(varargout{n});
     end
 elseif isnumeric(samples.sparse_variable_relative_weights)
-    % Current case with compression but common sparsity structure
+    % Compression but common sparsity structure
     w = samples.sparse_variable_relative_weights(i_samples,:);
     sw = size(w);
     iNonZeros = find(w);

@@ -13,21 +13,19 @@ function C = empirical_covariance(samples,i_samples,bIgnoreNaN,varargin)
 %   bIgnoreNaN = If true NaNs will be ignored in the averaging, if false
 %                then the mean will be NaN if there is any NaN in the
 %                samples.  If left empty, defaults to false.
-%   varargin = Inputs should be a series of variable names and if desired
-%              arrays giving the sub-dimensions to consider.  See
-%              empirical_mean.
-% Output:
-%   C = Covariance matrix for all requested inputs.  Variables are grouped
-%       together
+%   varargin = A 
+
+Strings giving names of variables to take empirical mean
+%              for. One output is provided for each provided string. There
+%              are computational savings to making a single call to the
+%              function with many variables specified then making numerous
+%              calls.
+% Outputs:
+%   varargout = Empirical means.
 %
 %
 % Example
-%   C = empirical_covariance(samples,[],false,'x',[2,3],'y','z',1);
-%   
-%       C is now a covariance matrix of the form [C_xx,C_xy,C_xz;
-%                                                 C_yx,C_yy,C_yz;
-%                                                 C_zx,C_zy,C_zz];
-%       where C_xx = [C_x2x2 C_x2x3; C_x3x2 C_x3x3] etc;
+%   [m_x,m_y] = emprical_mean(samples,[],false,'x','y');
 %
 % Tom Rainforth 05/07/16
 
@@ -48,7 +46,7 @@ while n<=numel(varargin)
         n = n+1;
         m = m+1;
     else
-        dimsToUse{m} = varargin{n+1}; %#ok<AGROW>
+        dimsToUse{m} = varargin{n}; %#ok<AGROW>
         n = n+2;
         m = m+1;
     end
@@ -66,7 +64,7 @@ C = NaN(nX2,nX2);
 
 % We later uncompress the samples and therefore regardless of sparsity, the
 % relative_particle_weights and the weights we need to use
-w = samples.relative_particle_weights(i_samples);
+w = samples.relative_particle_weights;
 
 for n_1 = 1:nX2
     for n_2 = n_1:nX2
@@ -89,8 +87,8 @@ for n_1 = 1:nX2
         X1 = X1(i_samples,:);
         X2 = X2(i_samples,:);
         
-        C(n_1,n_2) = calc_single_cov(X1,X2,w,bIgnoreNaN);
-        C(n_2,n_1) = C(n_1,n_2);
+        C(n1,n2) = calc_single_cov(X1,X2,w,bIgnoreNaN);
+        C(n2,n1) = C(n1,n2);
     end
 end
 
