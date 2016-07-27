@@ -23,7 +23,7 @@ function E = ess(samples,field,dims,i_samples)
 x = samples.var.(field);
 n_samples_total = size(x,1);
 
-if ~exist('dims','var')
+if ~exist('dims','var') || isempty(dims)
     dims = 1:size(x,2);
 end
 

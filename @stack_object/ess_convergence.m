@@ -21,7 +21,7 @@ function E = ess_convergence(samples,field,dims)
 
 x = samples.var.(field);
 
-if ~exist('dims','var')
+if ~exist('dims','var') || isempty(dims)
     dims = 1:size(x,2);
 end
 
