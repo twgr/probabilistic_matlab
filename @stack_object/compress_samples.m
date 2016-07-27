@@ -19,7 +19,8 @@ function samples = compress_samples(samples, T)
 % avoided.
 %
 % Inputs:
-%   particles = Uncompressed stack_object
+%   particles = Uncompressed stack_object (or array of stack_objects that
+%               will be compressed seperately)
 %   T = Total number of weighting functions.  Note if the individual x_t
 %       are multi-dimensional, this may be different to the array width
 %
@@ -33,6 +34,13 @@ if numel(samples)~=1
         samples(n) = compress_samples(samples(n), T);
     end
     return
+end
+
+if samples.compressed
+    warning('Trying to compress already compressed sample object.');
+    return
+else
+    samples.compressed = true;
 end
 
 p_fields = fields(samples.var);
