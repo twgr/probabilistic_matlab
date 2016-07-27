@@ -1,48 +1,58 @@
-function E = ess(samples,field,i_samples)
+function E = ess(samples,field,dims,i_samples)
+%ess Effective sample size calculation
+%
+% E = ess(samples,field,dims,i_samples)
+%
+% Calculates the effective sample size as defined in the ipmcmc paper.
+%
+% Inputs:
+%   samples = stack_object to calculate ESS for
+%   field = String specifying required variable field (only one accepted at
+%           a time).
+%   dims = Dimensions to calculate the ess for.  By default, all are
+%          calculated.
+%   i_samples = The indices of the samples to use in the calculate.  By
+%               default, all are used.
+%
+% Outputs:
+%   E = Effective sample size.  Returned as 1xd vector giving the ESS for
+%       each dimension.
+%
+% Tom Rainforth 08/07/16
 
 x = samples.var.(field);
-
 n_samples_total = size(x,1);
-n_dims = size(x,2);
+
+if ~exist('dims','var')
+    dims = 1:size(x,2);
+end
 
 if ~exist('i_samples','var') || isempty(i_samples)
     i_samples = (1:n_samples_total)';
 end
 
-if isfield(samples,'relative_weights') && ~isempty(samples.relative_weights')
-    % Support of outdated form
-    w_particles = samples.relative_weights(i_samples,:);
-    w_particles = w_particles/sum(w_particles);
-elseif isprop(samples,'relative_particle_weights')  && ~isempty(samples.relative_particle_weights)
+if ~isempty(samples.relative_particle_weights)
     w_particles = samples.relative_particle_weights(i_samples,:);
 else
     w_particles = ones(numel(i_samples),1)/numel(i_samples);
 end
 
 x = x(i_samples,:);
-if isfield(samples.var,'num_instances')
-    samples.var.num_instances = samples.var.num_instances(i_samples,:);
-elseif isprop(samples,'sparse_variable_relative_weights') && isnumeric(samples.sparse_variable_relative_weights) && ~isempty(samples.sparse_variable_relative_weights)
+if isnumeric(samples.sparse_variable_relative_weights) && ~isempty(samples.sparse_variable_relative_weights)
     samples.sparse_variable_relative_weights = samples.sparse_variable_relative_weights(i_samples,:);
-elseif isprop(samples,'sparse_variable_relative_weights') && isstruct(samples.sparse_variable_relative_weights)
+elseif isstruct(samples.sparse_variable_relative_weights)
     samples.sparse_variable_relative_weights.(field) = samples.sparse_variable_relative_weights.(field)(i_samples,:);
 end
 
-E = NaN(1,size(x,2));
+E = NaN(1,numel(dims));
 
-for d=1:n_dims
+for d=dims
     if issparse(x)
         x_local = nonzeros(x(:,d));
     else
         x_local = x(:,d);
     end
-    if isfield(samples.var,'num_instances')
-        % Support of outdated form
-        [i,~,counts] = find(samples.var.num_instances(:,d));
-        w_local = counts.*w_particles(i);
-        w_local = w_local/sum(w_local);
-    elseif isfield(samples.var,'relative_weights') || isstruct(samples) || isempty(samples.sparse_variable_relative_weights)
-        % Includes support of outdated form
+    if isempty(samples.sparse_variable_relative_weights)
         w_local = w_particles;
     elseif isnumeric(samples.sparse_variable_relative_weights)
         w_local = nonzeros(samples.sparse_variable_relative_weights(:,d));
