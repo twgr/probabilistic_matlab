@@ -1,6 +1,6 @@
 %% Branching with smc inference, compressed output
 
-samples_branching = infer('branching_model',[],'smc','n_particles',5e5,'n_iter',3,'b_compress',true);
+samples_branching = infer('branching_model',[],'smc','n_particles',5e5,'n_iter',3,'b_parallel',true,'b_compress',true);
 
 densities_branching_r = zeros(1,20);
 densities_branching_r(1:max(samples_branching.var.r)+1) = results_binning(samples_branching,'r',1,size(samples_branching.var.r,2),0:1:max(samples_branching.var.r),true);
@@ -20,7 +20,7 @@ samples_g = infer('gaussian_model',[],'pgibbs','n_particles',1e4,'n_iter',1e3,'b
 
 mu_g_out = empirical_mean(samples_g,[],false,'mu');
 mu_g_truth = 7.25;
-sig_g_out = sqrt(empirical_covariance(samples_g,true,'mu'));
+sig_g_out = empirical_moments(samples_g,2,[],true,'mu');
 sig_g_truth = sqrt(1/1.2);
 disp(['Gaussian mu truth ' num2str(mu_g_truth) ' sampled ' num2str(mu_g_out)]);
 disp(['Gaussian sig truth ' num2str(sig_g_truth) ' sampled ' num2str(sig_g_out)]);
@@ -43,9 +43,10 @@ data_nlss = load(['example_models' filesep() 'non_linear_state_space_data' files
 n_steps = 20;
 model_info.observations = data_nlss.Y(1:n_steps)';
 n_iter = 20;
-samples_nlss = infer('nonlinear_state_space',model_info,'ipmcmc','n_particles',10000,'n_iter',n_iter,'M',16,'P',5,'b_parallel',false);
+samples_nlss = infer('nonlinear_state_space',model_info,'ipmcmc','n_particles',10000,'n_iter',n_iter,'M',16,'P',5,'b_parallel',true,'b_compress',true);
  
 histogram_plotter(samples_nlss,'x',5,4,1:20,300);
+
 ESS = ess(samples_nlss,'x')/n_iter;
 figure;
 semilogy(ESS);
