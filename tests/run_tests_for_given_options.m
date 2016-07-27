@@ -20,7 +20,7 @@ samples_g = infer('gaussian_model',[],options{:});
 
 mu_g_out = empirical_mean(samples_g,[],false,'mu');
 mu_g_truth = 7.25;
-sig_g_out = sqrt(empirical_covariance(samples_g,true,'mu'));
+sig_g_out = empirical_moments(samples_g,2,[],true,'mu');
 sig_g_truth = sqrt(1/1.2);
 
 gaussian_KL = log(sig_g_out)-log(sig_g_truth)+((sig_g_truth)^2+(mu_g_truth-mu_g_out)^2)/(2*(sig_g_out^2))-0.5;
