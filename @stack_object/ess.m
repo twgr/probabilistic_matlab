@@ -20,49 +20,25 @@ function E = ess(samples,field,dims,i_samples)
 %
 % Tom Rainforth 08/07/16
 
-x = samples.var.(field);
-n_samples_total = size(x,1);
+[n_samples,n_dims_total] = size(samples.var.(field));
 
 if ~exist('dims','var') || isempty(dims)
-    dims = 1:size(x,2);
+    dims = 1:n_dims_total;
 end
 
 if ~exist('i_samples','var') || isempty(i_samples)
-    i_samples = (1:n_samples_total)';
-end
-
-if ~isempty(samples.relative_particle_weights)
-    w_particles = samples.relative_particle_weights(i_samples,:);
-else
-    w_particles = ones(numel(i_samples),1)/numel(i_samples);
-end
-
-x = x(i_samples,:);
-if isnumeric(samples.sparse_variable_relative_weights) && ~isempty(samples.sparse_variable_relative_weights)
-    samples.sparse_variable_relative_weights = samples.sparse_variable_relative_weights(i_samples,:);
-elseif isstruct(samples.sparse_variable_relative_weights)
-    samples.sparse_variable_relative_weights.(field) = samples.sparse_variable_relative_weights.(field)(i_samples,:);
+    i_samples = (1:n_samples)';
 end
 
 E = NaN(1,numel(dims));
 
-for d=dims
-    if issparse(x)
-        x_local = nonzeros(x(:,d));
-    else
-        x_local = x(:,d);
-    end
-    if isempty(samples.sparse_variable_relative_weights)
-        w_local = w_particles;
-    elseif isnumeric(samples.sparse_variable_relative_weights)
-        w_local = nonzeros(samples.sparse_variable_relative_weights(:,d));
-    else
-        w_local = nonzeros(samples.sparse_variable_relative_weights.(field)(:,d));
-    end
-    w_local = w_local/sum(w_local);
+for nd = 1:numel(dims)
+    d=dims(nd);
+    x_local = samples.get_variable_dim(field,d,i_samples);
+    w_local = samples.get_weights(field,d,i_samples);
     [~,~,i_val] = fast_unique(x_local);
     V = accumarray(i_val,w_local);
-    E(d) = 1./sum(V.^2);
+    E(nd) = 1./sum(V.^2);
 end
 
 end

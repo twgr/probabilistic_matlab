@@ -6,7 +6,7 @@ samples_branching = infer('branching_model',[],options{:});
 
 densities_branching_r = zeros(1,20);
 densities_branching_r(1:max(samples_branching.var.r)+1) = ...
-    results_binning(samples_branching,'r',max(samples_branching.var.r)+1,true);
+    results_binning(samples_branching,'r',max(samples_branching.var.r)+1,true,[],[],0:1:max(samples_branching.var.r))';
 densities_branching_r_truth = [0.0209421460738810;0.120049724359027;0.0676937411893348;1.02017216903057e-09;1.00000000006526e-32;0.333292841871083;0.222305145210522;0.126917947983607;0.0633921064841567;0.0281583673328266;0.0112158251425169;0.00410248708336039;0.00135825297633444;0.000414215967343333;0.000116031661294933;3.05009697889260e-05;8.31844630607070e-06;1.49305446519218e-06;6.39880485082362e-07;2.13293495027454e-07]';
 
 kl_diffs = densities_branching_r(1:20).*(log(densities_branching_r(1:20))-log(densities_branching_r_truth(1:20)));
@@ -31,7 +31,7 @@ gaussian_KL = log(sig_g_out)-log(sig_g_truth)+((sig_g_truth)^2+(mu_g_truth-mu_g_
 data_hmm = [0.9 0.8 0.7 0.0 -0.025 -5.0 -2.0 -0.1 0.0 0.13 0.45 6 0.2 0.3 -1 -1]';
 samples_hmm = infer('hmm',data_hmm,options{:});
 
-densities_hmm = results_binning(samples_hmm,'x',[],true,[],[],[1 2 3]);
+densities_hmm = results_binning(samples_hmm,'x',[],true,[],[],[1 2 3])';
 densities_hmm_truth = [0.377510329270661,0.309531763819114,0.312957906910225;
                        0.0414378861264862,0.406623078612501,0.551939035261013;
                        0.0536324337803479,0.254680440661969,0.691687125557683;

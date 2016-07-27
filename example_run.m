@@ -5,7 +5,7 @@ samples_branching = ...
 
 densities_branching_r = zeros(1,20);
 densities_branching_r(1:max(samples_branching.var.r)+1) = ...
-    results_binning(samples_branching,'r',max(samples_branching.var.r)+1,true);
+    results_binning(samples_branching,'r',max(samples_branching.var.r)+1,true,[],[],0:1:max(samples_branching.var.r))';
 densities_branching_r_truth = [0.0209421460738810;0.120049724359027;0.0676937411893348;1.02017216903057e-09;1.00000000006526e-32;...
                                0.333292841871083;0.222305145210522;0.126917947983607;0.0633921064841567;0.0281583673328266;...
                                0.0112158251425169;0.00410248708336039;0.00135825297633444;0.000414215967343333;0.000116031661294933;...
@@ -30,14 +30,14 @@ sig_g_truth = sqrt(1/1.2);
 disp(['Gaussian mu truth ' num2str(mu_g_truth) ' sampled ' num2str(mu_g_out)]);
 disp(['Gaussian sig truth ' num2str(sig_g_truth) ' sampled ' num2str(sig_g_out)]);
 
-histogram_plotter(samples_g,'mu',1,1,1,100);
+histogram_plotter(samples_g,'mu',100,1,1);
 
 %% HMM with pimh inference
 
 data_hmm = [0.9 0.8 0.7 0.0 -0.025 -5.0 -2.0 -0.1 0.0 0.13 0.45 6 0.2 0.3 -1 -1]';
 samples_hmm = infer('hmm',data_hmm,'pimh','n_particles',1e4,'n_iter',20);
 
-densities_hmm = results_binning(samples_hmm,'x',[],true,[],[],[1 2 3]);
+densities_hmm = results_binning(samples_hmm,'x',[],true,[],[],[1 2 3])';
 densities_hmm_truth = [0.377510329270661,0.309531763819114,0.312957906910225;
                        0.0414378861264862,0.406623078612501,0.551939035261013;
                        0.0536324337803479,0.254680440661969,0.691687125557683;
@@ -66,7 +66,7 @@ model_info.observations = data_nlss.Y(1:n_steps)';
 n_iter = 20;
 samples_nlss = infer('nonlinear_state_space',model_info,'ipmcmc','n_particles',10000,'n_iter',n_iter,'M',16,'P',5,'b_parallel',true,'b_compress',true);
  
-histogram_plotter(samples_nlss,'x',5,4,1:20,300);
+histogram_plotter(samples_nlss,'x',300,4,5,false,1:20);
 
 ESS = ess(samples_nlss,'x')/n_iter;
 figure;

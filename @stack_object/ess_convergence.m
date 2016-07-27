@@ -19,46 +19,28 @@ function E = ess_convergence(samples,field,dims)
 %
 % Tom Rainforth 08/07/16
 
-x = samples.var.(field);
+[n_samples,n_dims_total] = size(samples.var.(field));
 
 if ~exist('dims','var') || isempty(dims)
-    dims = 1:size(x,2);
+    dims = 1:n_dims_total;
 end
 
 n_iter = samples.options.n_iter;
-n_p_per_iter = size(x,1)/n_iter;
+n_p_per_iter = n_samples/n_iter;
 
-if ~isempty(samples.relative_particle_weights)
-    w_particles = samples.relative_particle_weights;
-else
-    w_particles = ones(numel(i_samples),1)/numel(i_samples);
-end
+i_samples = (1:n_samples)';
 
 E = NaN(n_iter,numel(dims));
 
-for d=dims
-    if issparse(x)
-        iNonZeros = find(x(:,d));
-        x_local = nonzeros(x(:,d));
-    else
-        iNonZeros = 1:size(x_local,2);
-        x_local = x(:,d);
-    end
-    if isempty(samples.sparse_variable_relative_weights)
-        % Includes support of outdated form
-        w_local = w_particles;
-    elseif isnumeric(samples.sparse_variable_relative_weights)
-        w_local = nonzeros(samples.sparse_variable_relative_weights(:,d));
-    else
-        w_local = nonzeros(samples.sparse_variable_relative_weights.(field)(:,d));
-    end
-    
+for nd = 1:numel(dims)
+    d=dims(nd);
+    [x_local,iNonZeros] = samples.get_variable_dim(field,d,i_samples);
+    w_local = samples.get_weights(field,d,i_samples);
     i_iter = ceil(iNonZeros/(n_p_per_iter));  
-    w_local = w_local/sum(w_local);
     [~,~,i_val] = fast_unique(x_local);
     V = accumarray([i_iter,i_val],w_local,[n_iter,max(i_val)],[],[],1);
     V = cumsum(V,1);
-    E(:,d) = sum(V,2).^2./sum(V.^2,2);
+    E(:,nd) = sum(V,2).^2./sum(V.^2,2);
 end
 
 end
