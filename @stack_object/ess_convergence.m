@@ -34,7 +34,7 @@ E = NaN(n_iter,numel(dims));
 
 for nd = 1:numel(dims)
     d=dims(nd);
-    [x_local,iNonZeros] = samples.get_variable_dim(field,d,i_samples);
+    [x_local,iNonZeros] = samples.get_variable(field,d,i_samples);
     w_local = samples.get_weights(field,d,i_samples);
     i_iter = ceil(iNonZeros/(n_p_per_iter));  
     [~,~,i_val] = fast_unique(x_local);

@@ -1,4 +1,4 @@
-function [w, sum_w, iNonZeros] = get_weights(samples,field,d,i_samples)
+function [w, sum_w, iNonZeros] = get_weights(samples,field,dims,i_samples)
 %get_weights Extracts weights for particular fields and dimensions
 %
 % [w, sum_w] = get_weights(samples,field,d,i_samples)
@@ -9,7 +9,7 @@ function [w, sum_w, iNonZeros] = get_weights(samples,field,d,i_samples)
 % Inputs
 %   samples = stack_object
 %   field = Variable field to get weight for
-%   d = Dimension to get weight for
+%   dims = Dimensions to get weight for
 %
 % Outputs
 %   w = Weights for all the particles, normalized to sum to 1 and with the
@@ -28,14 +28,14 @@ if isempty(samples.sparse_variable_relative_weights)
         iNonZeros = (1:numel(w))';
     end
 elseif isnumeric(samples.sparse_variable_relative_weights)
-    w = nonzeros(samples.sparse_variable_relative_weights(i_samples,d));
+    w = nonzeros(samples.sparse_variable_relative_weights(i_samples,dims));
     if nargout>2
-        iNonZeros = find(samples.sparse_variable_relative_weights(i_samples,d));
+        iNonZeros = find(samples.sparse_variable_relative_weights(i_samples,dims));
     end
 else
-    w = nonzeros(samples.sparse_variable_relative_weights.(field)(i_samples,d));
+    w = nonzeros(samples.sparse_variable_relative_weights.(field)(i_samples,dims));
     if nargout>2
-        iNonZeros = find(samples.sparse_variable_relative_weights.(field)(i_samples,d));
+        iNonZeros = find(samples.sparse_variable_relative_weights.(field)(i_samples,dims));
     end
 end
 

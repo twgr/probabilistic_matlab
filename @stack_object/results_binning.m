@@ -67,7 +67,7 @@ b_distinct_values = true(ndims,1);
 for nd = 1:numel(dims)
     d=dims(nd);
     
-    x_local = samples.get_variable_dim(field,d,i_samples);
+    x_local = samples.get_variable(field,d,i_samples);
     
     if isempty(edges{nd})
         maxX = max(x_local);

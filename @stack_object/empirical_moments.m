@@ -42,7 +42,7 @@ end
 
 varargout = cell(1,numel(orders));
 
-X = samples.get_variable_dim(field,dims,i_samples);
+X = samples.get_variable(field,dims,i_samples);
 [w,~,iNonZeros] = samples.get_weights(field,dims,i_samples);
 [~,jM_local] = ind2sub([n_samples,n_dims_total],iNonZeros);
 if bIgnoreNaN

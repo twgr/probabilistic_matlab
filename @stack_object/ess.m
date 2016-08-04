@@ -34,7 +34,7 @@ E = NaN(1,numel(dims));
 
 for nd = 1:numel(dims)
     d=dims(nd);
-    x_local = samples.get_variable_dim(field,d,i_samples);
+    x_local = samples.get_variable(field,d,i_samples);
     w_local = samples.get_weights(field,d,i_samples);
     [~,~,i_val] = fast_unique(x_local);
     V = accumarray(i_val,w_local);

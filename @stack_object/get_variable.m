@@ -1,14 +1,14 @@
-function [x, iNonZeros] = get_variable_dim(samples,field,d,i_samples)
-%get_variable_dim   Extracts a single variable dimension
+function [x, iNonZeros] = get_variable(samples,field,dims,i_samples)
+%get_variable   Extracts a variable
 %
-% x = get_variable_dim(samples,field,d,i_samples)
+% x = get_variable(samples,field,dims,i_samples)
 %
 % Variable extraction that removes all zeros when sparse.
 %
 % Inputs
 %   samples = stack_object
 %   field = Variable field
-%   d = Dimension
+%   dims = Dimensions
 %
 % Outputs
 %   x = Collapsed samples for that dimension
@@ -16,11 +16,11 @@ function [x, iNonZeros] = get_variable_dim(samples,field,d,i_samples)
 %
 % Tom Rainforth 27/07/16
 
-x = samples.var.(field)(i_samples,d);
+x = samples.var.(field)(i_samples,dims);
 if issparse(x)
     x = nonzeros(x);
     if nargout>1
-        iNonZeros = find(x(:,d));
+        iNonZeros = find(x(:,dims));
     end
 elseif nargout>1
     iNonZeros = 1:size(x_local,2);

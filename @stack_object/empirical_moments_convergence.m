@@ -29,7 +29,7 @@ n_p_per_iter = n_samples/n_iter;
 
 varargout = cell(1,numel(orders));
 
-X = samples.get_variable_dim(field,dims,i_samples);
+X = samples.get_variable(field,dims,i_samples);
 [w,~,iNonZeros] = samples.get_weights(field,dims,i_samples);
 [iM,jM] = ind2sub([n_samples,n_dims_total],iNonZeros);
 if bIgnoreNaN
