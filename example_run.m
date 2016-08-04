@@ -60,11 +60,11 @@ disp(['HMM scaled distance to truth ' num2str(densities_hmm_distance)]);
 
 %% Nonlinear state space model with dpg inference
 
-data_nlss = load(['example_models' filesep() 'non_linear_state_space_data' filesep() 'Wn_equals_1' filesep() 'nonlinear_state_space_generate_data1.mat']);
+data_nlss = load(['example_models' filesep() 'non_linear_state_space_data' filesep() 'nonlinear_state_space_generate_data1.mat']);
 n_steps = 20;
 model_info.observations = data_nlss.Y(1:n_steps)';
 n_iter = 20;
-samples_nlss = infer('nonlinear_state_space',model_info,'ipmcmc','n_particles',10000,'n_iter',n_iter,'M',16,'P',5,'b_parallel',true,'b_compress',true);
+samples_nlss = infer('nonlinear_state_space',model_info,'ipmcmc','n_particles',10000,'n_iter',n_iter,'M',16,'P',8,'b_parallel',true,'b_compress',true);
  
 histogram_plotter(samples_nlss,'x',300,4,5,false,1:20);
 
@@ -73,3 +73,23 @@ figure;
 semilogy(ESS);
 xlabel('Step in state space');
 ylabel('Effective sample size per iteration');
+
+%%
+
+for data_set=1:10;
+
+data_lss = load(['example_models' filesep() 'kalman_filter_data' filesep() 'kalman_filter_data_' num2str(data_set) '.mat']);
+ground_truth = load(['example_models' filesep() 'kalman_filter_data' filesep() 'ground_truth_summary.mat'],'truths');
+ground_truth = ground_truth.truths.(['b' num2str(data_set)]);
+
+n_iter = 1000;
+samples_lss_ipmcmc = infer('kalman',data_lss.model_inputs,'ipmcmc','n_particles',100,'n_iter',n_iter,'M',32,'P',16,'b_parallel',true,'b_compress',true);
+samples_lss_mPG = infer('kalman',data_lss.model_inputs,'independent_nodes','n_particles',100,'n_iter',n_iter,'Ms',[32,0,0],'b_parallel',true,'b_compress',true);
+
+h1 = figure;
+h2 = figure;
+
+plot_lss_error(samples_lss_ipmcmc,ground_truth,h1,h2,'r');
+plot_lss_error(samples_lss_mPG,ground_truth,h1,h2,'b');
+
+end

@@ -14,6 +14,7 @@ function samples = process_final_samples(samples_array,b_compress,T)
 %
 % Tom Rainforth 08/06/16
 
+samples_array = samples_array';
 samples_array = samples_array(:);
 
 samples = stack_object;
