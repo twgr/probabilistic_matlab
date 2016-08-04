@@ -1,181 +1,79 @@
-function varargout = empirical_moments(samples,orders,i_samples,bIgnoreNaN,varargin)
-%varargout = empirical_moments(samples,order,i_samples,bIgnoreNaN,varargin)
+function varargout = empirical_moments(samples,orders,field,dims,i_samples,bIgnoreNaN)
+%varargout = empirical_moments(samples,orders,field,dims,i_samples,bIgnoreNaN)
 %
-% Calculations the moments of order orders the variables named in vararign 
-% within the sample set samples.  
+% Calculates empirical moments from the samples
 %
-% Inputs: samples, orders, i_samples, bIgnoreNaN, varargin.
-%   All as per empirical_mean other than the order input:
-% order = 1 : mean.  As per empirical_mean
-% order = 2 : standard deviation
-% order = 3 : skewness
-% order = 4 : excess kurtosis
-% order = n (>4) : nth order moment given by
+% Inputs: samples, orders, field, dims, i_samples, bIgnoreNaN
+%   - Order is a vector of the moment orders to calculate where:
+%       order = 1 : mean
+%       order = 2 : standard deviation
+%       order = 3 : skewness
+%       order = 4 : excess kurtosis
+%       order = n (>4) : nth order moment given by
 %                       E[(X-muX).^n]./(std_dev.^n) with appropriate
 %                       weighting of the samples incorporated.
+%   - For field,dims,i_samples see ess
+%   - bIgnoreNaN - If true NaNs will be ignored in the averaging, if false
+%     then the mean will be NaN if there is any NaN in the samples.  If
+%     left empty, defaults to false.
 %
-% Outputs: as per empriical_mean.  Results are grouped first by the same
-% varargin such that
-%   empirical_moment(samples,[1,3],[],true,'x',y')
-% returns [mean_x, skewness_x, mean_y, skewness_y]
+% Outputs: varargout where each output is the empirical moment
+% corresponding to a value of order
 %
 % Tom Rainforth 05/07/16
 
-if ~exist('i_samples','var') || isempty(i_samples) || ischar(i_samples) || numel(i_samples)==1    
-    if ischar(i_samples)
-        if exist('bIgnoreNaN','var')
-            varargin = [{i_samples},{bIgnoreNaN}, varargin];
-        else
-            varargin = {i_samples};
-        end
-        bIgnoreNaN = false;        
-    elseif numel(i_samples)==1
-        varargin = [{bIgnoreNaN}, varargin];
-        bIgnoreNaN = i_samples;
-    end
-    if ~isempty(varargin)
-        i_samples = (1:size(samples.var.(varargin{end}),1))';
-    else
-        i_samples = (1:size(samples.var.(bIgnoreNaN),1))';
-    end
+[n_samples,n_dims_total] = size(samples.var.(field));
+
+if ~exist('dims','var') || isempty(dims)
+    dims = 1:n_dims_total;
+end
+
+if ~exist('i_samples','var') || isempty(i_samples)
+    i_samples = (1:n_samples)';
 end
 
 if ~exist('bIgnoreNaN','var') || isempty(bIgnoreNaN)
     bIgnoreNaN = false;
-elseif ischar(bIgnoreNaN)
-    varargin = [{bIgnoreNaN}, varargin];
-    bIgnoreNaN = false;
 end
 
-if ~all(cellfun(@(x) isnumeric(samples.var.(x)), varargin))
+if ~isnumeric(samples.var.(field))
     error('Only valid for numeric variables');
 end
 
-varargout = cell(1,numel(varargin));
+varargout = cell(1,numel(orders));
 
+X = samples.get_variable_dim(field,dims,i_samples);
+[w,~,iNonZeros] = samples.get_weights(field,dims,i_samples);
+[~,jM_local] = ind2sub([n_samples,n_dims_total],iNonZeros);
+if bIgnoreNaN
+    bNotNaN = ~isnan(X);
+    w = w(bNotNaN);
+    X = X(bNotNaN);
+    jM_local = jM_local(bNotNaN);
+end
+scale = accumarray(jM_local,w,[n_dims_total,1]);
+meanX = accumarray(jM_local,w.*X,[n_dims_total,1])./scale;
 if numel(orders)==1 && orders==1
-    for n=1:numel(varargin)
-        varargout{n} = empirical_mean(samples,i_samples,bIgnoreNaN,varargin{n});
-    end
+    varargout{1} = meanX;
     return
 end
+X = X-meanX(jM_local);
+varX = accumarray(jM_local,w.*(X.^2),[n_dims_total,1])./scale;
+varX = max(0,varX);
 
-
-if isempty(samples.sparse_variable_relative_weights)
-    % No compression
-    n_out = 1;
-    
-    for n=1:numel(varargin)        
-        X = samples.var.(varargin{n})(i_samples,:);        
-        if bIgnoreNaN
-            bNaN = isnan(X);
-            X(bNaN) = 0;
-            w =  bsxfun(@rdivide,samples.relative_particle_weights(i_samples,:),sum(bsxfun(@times,~bNaN,samples.relative_particle_weights(i_samples,:)),1));
-            w(bNaN) = 0;
-        else
-            w = samples.relative_particle_weights(i_samples,:)/sum(samples.relative_particle_weights(i_samples,:));
-        end
-        scale = sum(w,1);
-        meanX = sum(bsxfun(@times,X,w),1)./scale;
-        X = bsxfun(@minus,X,meanX);
-        varX = sum(bsxfun(@times,w,X.^2),1)./scale;
-        varX = max(0,varX);
-        for no = 1:numel(orders)     
-            if orders(no)==1
-                varargout{n_out} = meanX;
-            elseif orders(no)==2
-                varargout{n_out} = sqrt(varX);
-            else
-                varargout{n_out} = sum(bsxfun(@times,w,X.^orders(no)),1)./(scale.*varX.^(orders(no)/2));
-                if orders(no)==4
-                    varargout{n_out} = varargout{n_out} - 3;
-                end
-            end
-            varargout{n_out} = full(varargout{n_out});
-            n_out = n_out+1;
+for no = 1:numel(orders)
+    if orders(no)==1
+        varargout{no} = meanX;
+    elseif orders(no)==2
+        varargout{no} = sqrt(varX);
+    else
+        varargout{no} = accumarray(jM_local,w.*(X.^orders(no)),[n_dims_total,1])./(scale.*varX.^(orders(no)/2));
+        if orders(no)==4
+            varargout{no} = varargout{no}-3;
         end
     end
-elseif isnumeric(samples.sparse_variable_relative_weights)
-    % Compression but common sparsity structure
-    w = samples.sparse_variable_relative_weights(i_samples,:);
-    sw = size(w);
-    iNonZeros = find(w);
-    w = full(w(iNonZeros));    
-    [~,jM] = ind2sub(sw,iNonZeros);
-    
-    n_out = 1;
-    for n=1:numel(varargin)        
-        X = samples.var.(varargin{n})(i_samples,:);
-        [~,sX2] = size(X);
-        X = X(iNonZeros);
-        w_local = w;
-        jM_local = jM;
-        if bIgnoreNaN
-            bNotNaN = ~isnan(X);
-            w_local = w(bNotNaN);
-            X = X(bNotNaN);
-            jM_local = jM_local(bNotNaN);
-        end
-        scale = accumarray(jM_local,w_local,[sX2,1]);
-        meanX = accumarray(jM_local,w_local.*X,[sX2,1])./scale;
-        X = X-meanX(jM_local);
-        varX = accumarray(jM_local,w_local.*(X.^2),[sX2,1])./scale;
-        varX = max(0,varX);
-        for no = 1:numel(orders)
-            if orders(no)==1
-                varargout{n_out} = meanX;
-            elseif orders(no)==2
-                varargout{n_out} = sqrt(varX);
-            else
-                varargout{n_out} = accumarray(jM_local,w_local.*(X.^orders(no)),[sX2,1])./(scale.*varX.^(orders(no)/2));
-                if orders(no)==4
-                    varargout{n_out} = varargout{n_out}-3;
-                end
-            end
-            varargout{n_out} = full(varargout{n_out});
-            n_out = n_out+1;
-        end
-    end
-else
-    % Different variables have a different sparsity structure
-    n_out = 1;
-    
-    for n=1:numel(varargin)
-        
-        X = samples.var.(varargin{n})(i_samples,:);
-        sX = size(X);
-        
-        w_local = samples.sparse_variable_relative_weights.(varargin{n})(i_samples,:);
-        iNonZeros = find(w_local);
-        w_local = w_local(iNonZeros);
-        X = X(iNonZeros);
-        [~,jM_local] = ind2sub(sX,iNonZeros);        
-        if bIgnoreNaN
-            bNotNaN = ~isnan(X);
-            w_local = w_local(bNotNaN);
-            X = X(bNotNaN);
-            jM_local = jM_local(bNotNaN);
-        end
-        
-        scale = accumarray(jM_local,w_local,[sX2,1]);
-        meanX = accumarray(jM_local,w_local.*X,[sX2,1])./scale;
-        X = X-meanX(jM_local);
-        varX = accumarray(jM_local,w_local.*(X.^2),[sX2,1])./scale;
-        varX = max(0,varX);
-        for no = 1:numel(orders)
-            if orders(no)==1
-                varargout{n_out} = meanX;
-            elseif orders(no)==2
-                varargout{n_out} = sqrt(varX);
-            else
-                varargout{n_out} = accumarray(jM_local,w_local.*(X.^orders(no)),[sX2,1])./(scale.*varX.^(orders(no)/2));
-                if orders(no)==4
-                    varargout{n_out} = varargout{n_out}-3;
-                end
-            end
-            varargout{n_out} = full(varargout{n_out});
-            n_out = n_out+1;
-        end
-    end
+    varargout{no} = full(varargout{no});
 end
-    
+
+end
+

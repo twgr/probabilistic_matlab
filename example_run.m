@@ -23,9 +23,9 @@ legend('Output','Truth');
 
 samples_g = infer('gaussian_model',[],'pgibbs','n_particles',1e4,'n_iter',1e3,'b_compress',false);
 
-mu_g_out = empirical_mean(samples_g,[],false,'mu');
+mu_g_out = empirical_moments(samples_g,1,'mu');
 mu_g_truth = 7.25;
-sig_g_out = empirical_moments(samples_g,2,[],true,'mu');
+sig_g_out = empirical_moments(samples_g,2,'mu');
 sig_g_truth = sqrt(1/1.2);
 disp(['Gaussian mu truth ' num2str(mu_g_truth) ' sampled ' num2str(mu_g_out)]);
 disp(['Gaussian sig truth ' num2str(sig_g_truth) ' sampled ' num2str(sig_g_out)]);
