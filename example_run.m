@@ -73,23 +73,3 @@ figure;
 semilogy(ESS);
 xlabel('Step in state space');
 ylabel('Effective sample size per iteration');
-
-%%
-
-for data_set=1:10;
-
-data_lss = load(['example_models' filesep() 'kalman_filter_data' filesep() 'kalman_filter_data_' num2str(data_set) '.mat']);
-ground_truth = load(['example_models' filesep() 'kalman_filter_data' filesep() 'ground_truth_summary.mat'],'truths');
-ground_truth = ground_truth.truths.(['b' num2str(data_set)]);
-
-n_iter = 1000;
-samples_lss_ipmcmc = infer('kalman',data_lss.model_inputs,'ipmcmc','n_particles',100,'n_iter',n_iter,'M',32,'P',16,'b_parallel',true,'b_compress',true);
-samples_lss_mPG = infer('kalman',data_lss.model_inputs,'independent_nodes','n_particles',100,'n_iter',n_iter,'Ms',[32,0,0],'b_parallel',true,'b_compress',true);
-
-h1 = figure;
-h2 = figure;
-
-plot_lss_error(samples_lss_ipmcmc,ground_truth,h1,h2,'r');
-plot_lss_error(samples_lss_mPG,ground_truth,h1,h2,'b');
-
-end
