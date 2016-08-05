@@ -16,12 +16,16 @@ function [x, iNonZeros] = get_variable(samples,field,dims,i_samples)
 %
 % Tom Rainforth 27/07/16
 
+if ~exist('i_samples','var')
+    i_samples = ':';
+end
+
 x = samples.var.(field)(i_samples,dims);
 if issparse(x)
     x = nonzeros(x);
     if nargout>1
-        iNonZeros = find(x(:,dims));
+        iNonZeros = find(x);
     end
 elseif nargout>1
-    iNonZeros = 1:size(x_local,2);
+    iNonZeros = (1:size(x,1))';
 end

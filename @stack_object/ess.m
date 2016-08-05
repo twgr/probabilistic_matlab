@@ -20,14 +20,14 @@ function E = ess(samples,field,dims,i_samples)
 %
 % Tom Rainforth 08/07/16
 
-[n_samples,n_dims_total] = size(samples.var.(field));
+[~,n_dims_total] = size(samples.var.(field));
 
 if ~exist('dims','var') || isempty(dims)
     dims = 1:n_dims_total;
 end
 
 if ~exist('i_samples','var') || isempty(i_samples)
-    i_samples = (1:n_samples)';
+    i_samples = ':';
 end
 
 E = NaN(1,numel(dims));

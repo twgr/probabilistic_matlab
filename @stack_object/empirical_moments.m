@@ -54,7 +54,7 @@ end
 scale = accumarray(jM_local,w,[n_dims_total,1]);
 meanX = accumarray(jM_local,w.*X,[n_dims_total,1])./scale;
 if numel(orders)==1 && orders==1
-    varargout{1} = meanX;
+    varargout{1} = meanX';
     return
 end
 X = X-meanX(jM_local);
@@ -72,7 +72,7 @@ for no = 1:numel(orders)
             varargout{no} = varargout{no}-3;
         end
     end
-    varargout{no} = full(varargout{no});
+    varargout{no} = full(varargout{no})';
 end
 
 end

@@ -18,9 +18,13 @@ function [w, sum_w, iNonZeros] = get_weights(samples,field,dims,i_samples)
 %
 % Tom Rainforth 27/07/16
 
+if ~exist('i_samples','var')
+    i_samples = ':';
+end
+
 if isempty(samples.sparse_variable_relative_weights)
     if isempty(samples.relative_particle_weights)
-        w = ones(numel(i_samples),1)/numel(i_samples);
+        w = ones(size(samples.var.(field),1),1)/size(samples.var.(field),1);
     else
         w = samples.relative_particle_weights(i_samples,:);
     end
