@@ -111,12 +111,18 @@ for iter=1:n_iter
     
     % Update the indices of the conditional nodes and establish the node
     % weightings required for Rao-Blackwellization
+    
+    % * Uncomment below and ** for checking against old code with fixed seed
+    % c = 1:P;
+    
     [c, node_weights_iter] = gibbs_update_c(log_Zs_iter(:),c,n_conditional_gibbs_cycles);
     retained_particles = cell(M,1);
     for m=1:P
         retained_particles{c(m)} = new_retained_particle{c(m)};
+        % ** Uncomment below and * for checking against old code with fixed seed
+        % retained_particles{m} = new_retained_particle{c(m)};
     end
-    
+        
     % Setup output samples
     for m=1:M
         if b_Rao_Black_conditional_node_choice
@@ -148,7 +154,7 @@ for iter=1:n_iter
         % Preallocate space for the other samples
         samples = repmat(samples,n_iter,1);
     end
-    
+       
 end
 
 
