@@ -47,6 +47,15 @@ else
     varargin = varargin(i_input);
 end
 
+i_rng_seed = find(strcmpi(varargin,'rng_seed'));
+if ~isempty(i_rng_seed)
+   % Set random number seed
+    rng(varargin{i_rng_seed+1});    
+    i_input = 1:numel(varargin);
+    i_input([i_rng_seed,i_rng_seed+1]) = [];
+    varargin = varargin(i_input);
+end
+
 other_outputs = struct;
 
 eval(['[sampling_functions,weighting_functions] = ' model_file_name '(model_inputs);']);
@@ -54,6 +63,7 @@ eval(['[sampling_functions,weighting_functions] = ' model_file_name '(model_inpu
 global_option_names = {'n_particles','resample_method','n_iter','b_compress'};
 global_default_values = {100, 'stratified', 100, 'default'};
 global_option_values = process_options(global_option_names,global_default_values,varargin{:});
+
 n_particles = global_option_values{strcmpi(global_option_names,'n_particles')};
 n_iter = global_option_values{strcmpi(global_option_names,'n_iter')};
 n_samples_to_generate = n_particles*n_iter*numel(sampling_functions);
@@ -143,8 +153,12 @@ switch inference_type
     case 'ipmcmc'
         
         local_option_names = {'b_Rao_Black','b_parallel','M','P','n_conditional_gibbs_cycles','initial_retained_particles'};        
-        local_default_values = {true, true, 32, 16, 1, []};
+        local_default_values = {true, true, 32, 'half', 1, []};
         local_option_values = process_options(local_option_names,local_default_values,varargin{:});
+        
+        if strcmpi(local_option_values{4},'half')
+            local_option_values{4} = floor(local_option_values{3}/2);
+        end
         
         [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ipmcmc(sampling_functions,weighting_functions,global_option_values{:},local_option_values{:}); 
         other_outputs.log_Zs = log_Zs;
