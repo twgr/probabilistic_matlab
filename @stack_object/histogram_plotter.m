@@ -66,14 +66,17 @@ for n=1:nrows_plot;
         end
         
         xlabel(['X_{' num2str(d) '}']);
-        
+%         
+%         if n==1 && m==1
+%             title(regexprep(inputname(1),'[_\.]',' '));
+%         end
+%         
         if n==1 && m==1
-            title(regexprep(inputname(1),'[_\.]',' '));
+            title(['Probability densities of ' regexprep(field,'[_\.]',' ') ' for ' regexprep(inputname(1),'[_\.]',' ')]);
         end
         
-        if n==1 && m==ncols_plot
-            title(['Probability densities of ' regexprep(field,'[_\.]',' ')]);
-        end
+        set(gca,'FontSize',12);
+        
     end
 end
 

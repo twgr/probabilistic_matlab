@@ -1,3 +1,8 @@
+% Linear Gaussian state space model used in the paper with the same data
+% and calcualted ground truth.  Options below match those in the paper,
+% except that only 1000 iterations are carried out for the sake of speed
+% (this will still take a good few hours).
+
 clear all
 close all
 
