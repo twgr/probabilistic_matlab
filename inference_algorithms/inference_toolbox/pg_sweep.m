@@ -112,7 +112,10 @@ end
 
 % Sample the new retained particle (this is equivalent to resampling down
 % to a single particle)
-retained_particle = resample_particles(particles, log_weights, 1);
+[retained_particle, log_Z_step] = resample_particles(particles, log_weights, 1);
+
+% Update log_Z estimate for last step
+log_Z = log_Z+log_Z_step;
 
 % Store the variables that exist at each step and their sizes
 retained_particle.variables_step = variables_step;
