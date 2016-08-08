@@ -8,3 +8,4 @@ run_branching;
 run_gaussian;
 run_hmm;
 run_nlss;
+run_lgss;

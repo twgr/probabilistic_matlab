@@ -1,7 +1,9 @@
-% Nonlinear state space model with dpg inference
+% Nonlinear state space model with ipmcmc inference from the paper
+
+dataset_to_use = 1;  % Scalar between 1 and 10
 
 % Load data
-data_nlss = load(['example_models' filesep() 'non_linear_state_space_data' filesep() 'nonlinear_state_space_generate_data1.mat']);
+data_nlss = load(['example_models' filesep() 'non_linear_state_space_data' filesep() 'nonlinear_state_space_generate_data' num2str(dataset_to_use) '.mat']);
 
 % Choose number of steps
 n_steps = 20;
@@ -24,4 +26,7 @@ figure('units','normalized','outerposition',[0 0 1 1]);
 semilogy(ESS);
 xlabel('Step in state space');
 ylabel('Effective sample size per iteration');
+title('Effective sample size for NLSS Model');
 set(gca,'FontSize',32);
+
+drawnow;
