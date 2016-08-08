@@ -98,12 +98,11 @@ end
 
 function temp = compose_temps(temp_obj_1,temp_obj_2)
     
-   X_temp = stack_object;
    i_1 = (1:size(temp_obj_1.var.temp,1))';
    i_2 = size(temp_obj_1.var.temp,1)+(1:size(temp_obj_2.var.temp,1))';
    i_assign = [i_1;i_2];
    n_1 = size(i_1,1);
    n_2 = size(i_2,1);
    
-   temp = compose_two_sample_objects(X_temp,temp_obj_1,temp_obj_2,i_assign,n_1,n_2,[],[]);
+   temp = compose_two_sample_objects(temp_obj_1,temp_obj_2,i_assign,n_1,n_2,[],[]);
 end

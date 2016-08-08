@@ -92,9 +92,13 @@ for n=1:numel(sampling_functions)
                     {retained_particle.var.(retained_particle.variables_step{n}{v}){1}(1:retained_particle.sizes_step{n}{v})};
             end
         end
-        
+                
         % Add the intermediary retained particle back into the particle set
-        particles = compose_two_sample_objects([],intermediary_retained_particle,particles,1:N,1,N-1);
+        % TODO - the below is an elegant but inefficient way of doing the
+        % conditional resampling and currently adds ~20% to the run time.
+        % Switch to using a conditional resample directly except at the
+        % final iteration.
+        particles = compose_two_sample_objects(intermediary_retained_particle,particles,':',1,N-1);
         
     end
     

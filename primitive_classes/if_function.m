@@ -95,10 +95,7 @@ i_true = find(bTrue);
 i_false = find(~bTrue);
 i_assign = [i_true;i_false];
 
-X_dud = stack_object;
-X_dud.con = X.con;
-
-[X, other_output] = compose_two_sample_objects(X_dud,X_true,X_false,i_assign,...
+[X, other_output] = compose_two_sample_objects(X_true,X_false,i_assign,...
                             n_true,n_false,other_output_true,other_output_false);
 
 

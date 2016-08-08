@@ -1,12 +1,10 @@
-function [X, other_output] = compose_two_sample_objects(X,X_1,X_2,i_assign,n_1,n_2,other_out_1,other_out_2,i_preorder_1,i_preorder_2)
+function [X_1, other_output] = compose_two_sample_objects(X_1,X_2,i_assign,n_1,n_2,other_out_1,other_out_2,i_preorder_1,i_preorder_2)
 %compose_two_sample_objects
 %
 % Combines two stack_object type objects according to an assignment order
 % given by i_assign.  Workings are similar to struct_array_to_single_struct
 %
 % Required inputs:
-%   X = Starting object to which things are added.  If empty, an empty
-%       object except for setting X.con to X_1.con is used
 %   X_1, X2 = Stack objects to combine.
 %   i_assign = Array of reassignment ids.  Ids refer to output rather than
 %              input
@@ -20,14 +18,10 @@ function [X, other_output] = compose_two_sample_objects(X,X_1,X_2,i_assign,n_1,n
 %               replicating variables.
 %
 % Outputs:
-%   X, other_output
+%   X_1 = First stack object after second has been added on
+%   other_output = Combined other outputs
 %
 % Tom Rainforth 08/06/16
-
-if isempty(X)
-    X = stack_object;
-    X.con = X_1.con;
-end
 
 if ~exist('i_preorder_1','var')
     i_preorder_1 = [];
@@ -40,7 +34,16 @@ end
 fields_1 = fields(X_1.var);
 fields_2 = fields(X_2.var);
 
-variables = unique([fields_1; fields_2],'stable');
+variables = fields_1;
+if ~all(strcmpi(fields_1,fields_2))  
+    for m=1:numel(fields_2);
+        if ~isempty(strcmpi(fields_1,fields_2{m}))
+            variables = [variables; fields_2{m}]; %#ok<AGROW>
+        end
+    end
+end
+
+%variables = unique([fields_1; fields_2],'stable');
 
 for n_v = 1:numel(variables)
     if any(strcmpi(fields_1,variables{n_v})) && ~isempty(i_preorder_1)
@@ -52,16 +55,20 @@ for n_v = 1:numel(variables)
     end
     
     if n_1==0
-        X.var.(variables{n_v})(i_assign,:) = X_1.var.(variables{n_v});
+        X_1.var.(variables{n_v})(i_assign,:) = X_1.var.(variables{n_v});
         continue
     elseif n_2==0
-        X.var.(variables{n_v})(i_assign,:) = X_2.var.(variables{n_v});
+        X_1.var.(variables{n_v})(i_assign,:) = X_2.var.(variables{n_v});
         continue
     end
     
     if any(strcmpi(fields_1,variables{n_v})) && any(strcmpi(fields_2,variables{n_v}))
         if (size(X_1.var.(variables{n_v}),2)==size(X_2.var.(variables{n_v}),2)) && strcmp(class(X_1.var.(variables{n_v})),class(X_2.var.(variables{n_v})))
-            X.var.(variables{n_v})(i_assign,:) = [X_1.var.(variables{n_v});X_2.var.(variables{n_v})];
+            if strcmpi(i_assign,':')
+                X_1.var.(variables{n_v}) = [X_1.var.(variables{n_v});X_2.var.(variables{n_v})];
+            else
+                X_1.var.(variables{n_v})(i_assign,:) = [X_1.var.(variables{n_v});X_2.var.(variables{n_v})];
+            end
         elseif isnumeric(X_1.var.(variables{n_v})) && isnumeric(X_2.var.(variables{n_v}))
             n_col_1 = size(X_1.var.(variables{n_v}),2);
             n_col_2 = size(X_2.var.(variables{n_v}),2);
@@ -70,7 +77,11 @@ for n_v = 1:numel(variables)
             X_1_mat(:,1:n_col_1) = X_1.var.(variables{n_v});
             X_2_mat = NaN(n_2,n_cols);
             X_2_mat(:,1:n_col_2) = X_2.var.(variables{n_v});
-            X.var.(variables{n_v})(i_assign,:) = [X_1_mat;X_2_mat];
+            if strcmpi(i_assign,':')
+                X_1.var.(variables{n_v}) = [X_1_mat;X_2_mat];
+            else
+                X_1.var.(variables{n_v})(i_assign,:) = [X_1_mat;X_2_mat];
+            end
         else
             % This should indicate that one is a cell and one is an array.
             if ~iscell(X_1.var.(variables{n_v}))
@@ -79,18 +90,30 @@ for n_v = 1:numel(variables)
             if ~iscell(X_2.var.(variables{n_v}))
                 X_2.var.(variables{n_v}) = num2cell(X_2.var.(variables{n_v}),2);
             end
-            X.var.(variables{n_v})(i_assign,:) = [X_1.var.(variables{n_v});X_2.var.(variables{n_v})];
+            if strcmpi(i_assign,':')
+                X_1.var.(variables{n_v}) = [X_1.var.(variables{n_v});X_2.var.(variables{n_v})];
+            else
+                X_1.var.(variables{n_v})(i_assign,:) = [X_1.var.(variables{n_v});X_2.var.(variables{n_v})];
+            end
         end
     elseif any(strcmpi(fields_1,variables{n_v}))
         if ~iscell(X_1.var.(variables{n_v}))
             X_1.var.(variables{n_v}) = num2cell(X_1.var.(variables{n_v}),2);
         end
-        X.var.(variables{n_v})(i_assign,:) = [X_1.var.(variables{n_v});cell(n_2,1)];
+        if strcmpi(i_assign,':')
+            X_1.var.(variables{n_v}) = [X_1.var.(variables{n_v});cell(n_2,1)];
+        else
+            X_1.var.(variables{n_v})(i_assign,:) = [X_1.var.(variables{n_v});cell(n_2,1)];
+        end
     elseif any(strcmpi(fields_2,variables{n_v}))
         if ~iscell(X_2.var.(variables{n_v}))
             X_2.var.(variables{n_v}) = num2cell(X_2.var.(variables{n_v}),2);
         end
-        X.var.(variables{n_v})(i_assign,:) = [cell(n_1,1);X_2.var.(variables{n_v})];
+        if strcmpi(i_assign,':')
+            X_1.var.(variables{n_v}) = [cell(n_1,1);X_2.var.(variables{n_v})];
+        else
+            X_1.var.(variables{n_v})(i_assign,:) = [cell(n_1,1);X_2.var.(variables{n_v})];
+        end
     else
         error('Should not be in variables in not in either true or false fields.  Somethings gone wrong in the code');
     end
