@@ -1,48 +1,27 @@
-function plot_lss_error(samples_lss,ground_truth,h1,h2,colour)
+function plot_lss_error(summary_lss,ground_truth,h1,h2,colour)
 
-[mu_lss,sig_lss,ske_lss,kur_lss] = samples_lss.empirical_moments_convergence([1,2,3,4],'x');
-n1 = size(mu_lss,1);
-n2 = 3;
-n3 = size(mu_lss,2)/n2;
+squared_diffs = summary_squared_diffs(summary_lss,ground_truth);
 
-mu_lss = reshape(mu_lss,n1,n2,n3); 
-sig_lss = reshape(sig_lss,n1,n2,n3); 
-ske_lss = reshape(ske_lss,n1,n2,n3); 
-kur_lss = reshape(kur_lss,n1,n2,n3);
-
-for n=1:3
-    mu_error(:,n,:) = bsxfun(@minus,mu_lss(:,n,:),reshape(ground_truth.(['x_' num2str(n)]).Mean,[1,1,size(mu_lss,3)]));
-    sig_error(:,n,:) = bsxfun(@minus,sig_lss(:,n,:),reshape(ground_truth.(['x_' num2str(n)]).Std_dev,[1,1,size(mu_lss,3)]));
-    ske_error(:,n,:) = bsxfun(@minus,ske_lss(:,n,:),reshape(ground_truth.(['x_' num2str(n)]).Skewness,[1,1,size(mu_lss,3)]));
-    kur_error(:,n,:) = bsxfun(@minus,kur_lss(:,n,:),reshape(ground_truth.(['x_' num2str(n)]).Excess_kurtosis,[1,1,size(mu_lss,3)]));
-end
-
-mu_conv = squeeze(mean(mean(mu_error.^2,3),2));
-sig_conv = squeeze(mean(mean(sig_error.^2,3),2));
-ske_conv = squeeze(mean(mean(ske_error.^2,3),2));
-kur_conv = squeeze(mean(mean(kur_error.^2,3),2));
-
-mu_pos = squeeze(mean(mu_error(end,:,:).^2,2));
-sig_pos = squeeze(mean(sig_error(end,:,:).^2,2));
-ske_pos = squeeze(mean(ske_error(end,:,:).^2,2));
-kur_pos = squeeze(mean(kur_error(end,:,:).^2,2));
+plot_fields = {'Mean','Std_dev','Skewness','Excess_kurtosis'};
 
 figure(h1);
-subplot(2,2,1); loglog(mu_conv,colour); hold on;title('Mean');
-xlabel('MCMC Iteration'); ylabel('Mean Squared Error');
-subplot(2,2,2); loglog(sig_conv,colour); hold on;title('Std Dev');
-xlabel('MCMC Iteration'); ylabel('Mean Squared Error');
-subplot(2,2,3); loglog(ske_conv,colour); hold on;title('Skewness');
-xlabel('MCMC Iteration'); ylabel('Mean Squared Error');
-subplot(2,2,4); loglog(kur_conv,colour); hold on; title('Excess Kurtosis');
-xlabel('MCMC Iteration'); ylabel('Mean Squared Error');
+
+for n=1:4;
+    subplot(2,2,n);
+    loglog(squared_diffs.conv_total.x.(plot_fields{n}),colour); 
+    hold on;
+    title(regexprep(plot_fields{n},'_',' '));
+    xlabel('MCMC Iteration'); ylabel('Mean Squared Error');
+    set(gca,'FontSize',16);
+end
 
 figure(h2);
-subplot(2,2,1); semilogy(mu_pos,colour); hold on; title('Mean');
-xlabel('State space time step t'); ylabel('Mean Squared Error');
-subplot(2,2,2); semilogy(sig_pos,colour); hold on;  title('Std Dev');
-xlabel('State space time step t'); ylabel('Mean Squared Error');
-subplot(2,2,3); semilogy(ske_pos,colour); hold on; title('Skewness');
-xlabel('State space time step t'); ylabel('Mean Squared Error');
-subplot(2,2,4); semilogy(kur_pos,colour); hold on; title('Excess Kurtosis');
-xlabel('State space time step t'); ylabel('Mean Squared Error');
+
+for n=1:4;
+    subplot(2,2,n);
+    semilogy(mean(reshape(squared_diffs.pos_final.x.(plot_fields{n}),3,[]),1),colour); 
+    hold on;
+    title(regexprep(plot_fields{n},'_',' '));
+    xlabel('State space time step t'); ylabel('Mean Squared Error');
+    set(gca,'FontSize',16);
+end
