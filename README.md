@@ -42,17 +42,11 @@ Rainforth, T., Naesseth, C. A., Lindsten, F., Paige, B., van de Meent, J.-W., Do
 which should be used as reference for the inference algorithms.  I am currently in the process of providing academic documentation of the innovations behind the package (rather than the inference algorithms).  Until then, please use the following citation if you use this package:
 
 @inproceedings{rainforth-icml-2016,
-
   title = {Interacting Particle {M}arkov Chain {M}onte {C}arlo},
-
   author = {Rainforth, Tom and Naesseth, Christian A and Lindsten, Fredrik and Paige, Brooks and van de Meent, Jan-Willem and Doucet, Arnaud and Wood, Frank},
-
   booktitle = {Proceedings of the 33rd International Conference on Machine Learning},
-
   series = {JMLR: W\&CP},
-
   volume = {48},
-
   year = {2016}
 }
  
