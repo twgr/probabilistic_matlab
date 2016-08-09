@@ -2,12 +2,12 @@
 
 ### What is this repo? ###
 
-This code base currently falls somewhere between a probabilistic program and an SMC/PMCMC-based inference toolbox.  Models are written using a common format that is both expressive and maintains a format in which inference is efficient, exploiting vectorization, compression, and minimal memory overhead.  The core advantages of the package are
+This code base currently falls somewhere between a probabilistic program and an SMC/PMCMC-based inference toolbox.  Models are written using a common format that is both expressive and maintains a format in which inference is efficient, exploits vectorization and compression, and has minimal memory overhead.  The core advantages of the package are
 
-* The ability to run huge numbers of particles and iterations without suffering memory issues.  For example, on a 3 dimensional Kalman filter with 50 time-steps in the state sequence, with 32GB of available RAM, one can run up to ~10e6 particles and store ~200e6 total samples.
+* I can run huge numbers of particles and iterations without suffering memory issues.  For example, on a 3 dimensional Kalman filter with 50 time-steps in the state sequence, with 32GB of available RAM, one can run up to ~10e6 particles and store ~200e6 total samples.
 * Vectorization allows for very fast performance (~20 times faster than Anglican on the above model).
 * Matlab's debugger provides easy debugging for the models.
-* Can incorporate arbitrary deterministic external Matlab code (this may sometimes require a small amount of wrapper code and may be less efficient than writing directly in the template).
+* Can incorporate arbitrary deterministic external Matlab code.
 * Provides output in a common format with automatic output processing functions provided.
 * Allows state-of-the-art general purpose inference in the form of interacting particle Markov chain Monte Carlo (iPMCMC).
 
