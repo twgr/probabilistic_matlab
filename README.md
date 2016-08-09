@@ -26,16 +26,16 @@ This code base currently falls somewhere between a probabilistic program and an 
 
 ### Supported inference algorithms ###
 
-* Sequential Monte Carlo (SMC)
-* Particle Gibbs
-* Particle independent Metropolis Hastings (PIMH)
-* Alternate move Particle Gibbs
-* Arbitrary independent combinations of the above algorithms 
-* Interacting particle Markov Chain Monte Carlo (iPMCMC)
+* Sequential Monte Carlo ('smc')
+* Particle Gibbs ('pgibbs')
+* Particle independent Metropolis Hastings ('pimh')
+* Alternate move Particle Gibbs ('a_pgibbs')
+* Arbitrary independent combinations of the above algorithms  ('independent_nodes')
+* Interacting particle Markov Chain Monte Carlo ('ipmcmc')
 
 ### Further information & Contribution guidelines ###
 
-This work was developed as part of the paper 
+This work was developed as part of / in complement to the paper 
 
 Rainforth, T., Naesseth, C. A., Lindsten, F., Paige, B., van de Meent, J.-W., Doucet, A., & Wood, F. (2016). Interacting Particle Markov Chain Monte Carlo. In Proceedings of the 33rd International Conference on Machine Learning, JMLR: W&CP (Vol. 48).
 
