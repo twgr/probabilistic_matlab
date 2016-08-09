@@ -11,7 +11,7 @@ this_loc = fileparts(mfilename('fullpath'));
 ground_truths = load([this_loc filesep() '..' filesep() 'example_models' filesep() 'kalman_filter_data' filesep() 'ground_truth_summary.mat'],'truths');
 
 M = 32;
-common_options = {'resample_method','multinomial','n_particles',100,'n_iter',1000,'b_parallel',true,'b_compress',true,'rng_seed',1};
+common_options = {'resample_method','multinomial','n_particles',100,'n_iter',5000,'b_parallel',true,'b_compress',true,'rng_seed',1};
 
 for n=1:10;
 
