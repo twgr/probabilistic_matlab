@@ -3,6 +3,7 @@
 ### What is this repo? ###
 
 This code base currently falls somewhere between a probabilistic program and an SMC/PMCMC-based inference toolbox.  Models are written using a common format that is both expressive and maintains a format in which inference is efficient, exploiting vectorization, compression and minimal memory overhead.  The core advantages of the package are
+
 * The ability to run huge numbers of particles and iterations without suffering memory issues.  For example, on a 3 dimensional Kalman filter with 50 time-steps in the state sequence, with 32GB of availible RAM, one can run up to ~10e6 particles and store ~200e6 total samples.
 * Vectorization allows for very fast performance (~20 times faster than Anglican on the above model).
 * Matlab's debugger provides easy debugging for the models.
