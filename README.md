@@ -7,8 +7,7 @@ This code base currently falls somewhere between a Matlab-based probabilistic pr
 The main advantages of the package are:
 
 * It can run huge numbers of particles and iterations without suffering memory issues.  For example, on a 3 dimensional Kalman filter with 50 time-steps in the state sequence, with 32GB of available RAM, one can run up to ~10e6 particles and store ~200e6 total samples.
-* Vectorization allows for very fast performance (~20 times faster than Anglican on the above model).
-* Matlab's debugger provides easy debugging for the models.
+* Vectorization gives fast performance for many models (~20 times faster than Anglican on the above model).
 * Can incorporate arbitrary deterministic external Matlab code.
 * Provides output in a common format with automatic output processing functions provided.
 * Allows state-of-the-art general purpose inference in the form of interacting particle Markov chain Monte Carlo (iPMCMC).
