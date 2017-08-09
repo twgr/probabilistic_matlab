@@ -2,12 +2,12 @@
 
 ### What is this repo? ###
 
-This code base currently falls somewhere between a Matlab-based probabilistic program and an SMC/PMCMC-based inference toolbox.  Models are written using a template format that is expressive and general purpose, but which forces an inference-friendly structuring.  This produces faster inference and increased memory efficiency than fork-based probabilistic programs, by exploiting vectorization, compression, and more efficient sample storage (particularly for PMCMC algorithms).  As such, it is currently more of a compilation target for probabilistic programming systems than being a language in its own right, but it is still very easy to write models in directly the required format none the less. 
+This code base currently falls somewhere between a Matlab-based probabilistic program and an SMC/PMCMC-based inference toolbox.  Models are written using a template format that is expressive and general purpose, but which forces an inference-friendly structuring.  This can produce faster inference and increased memory efficiency than fork-based probabilistic programs, by exploiting vectorization, compression, and more efficient sample storage (particularly for PMCMC algorithms).  As such, it is currently more of a compilation target for probabilistic programming systems than being a language in its own right, but it is still very easy to write models in directly the required format none the less. 
 
 The main advantages of the package are:
 
 * It can run huge numbers of particles and iterations without suffering memory issues.  For example, on a 3 dimensional Kalman filter with 50 time-steps in the state sequence, with 32GB of available RAM, one can run up to ~10e6 particles and store ~200e6 total samples.
-* Vectorization gives fast performance for many models (~20 times faster than Anglican on the above model).
+* Vectorization gives fast performance for many models.
 * Can incorporate arbitrary deterministic external Matlab code.
 * Provides output in a common format with automatic output processing functions provided.
 * Allows state-of-the-art general purpose inference in the form of interacting particle Markov chain Monte Carlo (iPMCMC).
@@ -46,7 +46,7 @@ This work was developed as part of / in complement to the paper
 
 Rainforth, T., Naesseth, C. A., Lindsten, F., Paige, B., van de Meent, J.-W., Doucet, A., & Wood, F. (2016). Interacting Particle Markov Chain Monte Carlo. In Proceedings of the 33rd International Conference on Machine Learning, JMLR: W&CP (Vol. 48).
 
-which should be used as reference for the inference algorithms.  I am currently in the process of providing academic documentation of the innovations behind the package (rather than the inference algorithms).  Until then, please use the following citation if you use this package:
+which should be used as reference for the inference algorithms.  Please use the following citation if you use this package:
 
 @inproceedings{rainforth-icml-2016,
   title = {Interacting Particle {M}arkov Chain {M}onte {C}arlo},
