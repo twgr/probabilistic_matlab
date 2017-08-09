@@ -23,6 +23,14 @@ function [h,hsubs,densities,edges] = histogram_plotter(samples,field,n_bins,...
         
 [~,n_dims_total] = size(samples.var.(field));
 
+if ~exist('nrows_plot','var') || isempty(nrows_plot)
+    nrows_plot = 1;
+end
+
+if ~exist('ncols_plot','var') || isempty(ncols_plot)
+    ncols_plot = 1;
+end
+
 if ~exist('b_discrete','var')
     b_discrete = [];
 end
