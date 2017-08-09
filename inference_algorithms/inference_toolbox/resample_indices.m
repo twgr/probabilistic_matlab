@@ -8,7 +8,7 @@ function [i_resample,n_times_sampled] = resample_indices(w,n_samples,method)
 %   w (vector of +ve reals) = Weights, need not be normalized
 %   n_samples (+ve integer) = Number of samples to take
 %   method ('stratified' | 'systematic' | 'multinomial' | 'residual')
-%       = Employed resampling method, Default = 'stratified'
+%       = Employed resampling method, Default = 'systematic'
 %
 % Outputs
 %   i_resample = Indices of the particles to keep
@@ -17,7 +17,7 @@ function [i_resample,n_times_sampled] = resample_indices(w,n_samples,method)
 % Tom Rainforth 13/06/16
 
 if ~exist('method','var') || isempty(method)
-    method = 'stratified';
+    method = 'systematic';
 end
 
 % Normalize weights
