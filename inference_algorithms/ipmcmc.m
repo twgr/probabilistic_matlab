@@ -1,5 +1,5 @@
-function [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ...
-    ipmcmc(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,...
+function [samples, log_Zs, node_weights, sampled_indices, switching_rate, mus] = ...
+    ipmcmc(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,f,...
     b_Rao_Black,b_parallel,M,P,n_conditional_gibbs_cycles,initial_retained_particles)
 %ipmcmc  iPMCMC inference algorithm
 %
@@ -22,6 +22,9 @@ function [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ...
 %                     If empty takes default from resample_particles.m
 %   n_iter (+ve integer) = Number of MCMC iterations (indexed by r in the paper)
 %   b_compress (boolean) = Whether to use compress_samples
+%   f = Function to take expectation of.  Takes the var field of samples as
+%       inputs.  See function_expectation.m.
+%                               Default = []; (i.e. no estimate made)
 %   b_Rao_Black (boolean | 'cond_update_only') = Controls level of
 %                     Rao-Blackwellization (RB).  If true both the sampling of
 %                     the retained particles and the conditional node
@@ -55,8 +58,11 @@ function [samples, log_Zs, node_weights, sampled_indices, switching_rate] = ...
 %            set of SMC sweeps (c_{1:P} in the paper).
 %   switching_rate = Proportion of retained particles inhereted from an
 %             unconditional sweep at each iteration
+%   mus = Mean estimates of individual sweeps
 %
 % Tom Rainforth 07/06/16
+
+if ~exist('f','var'); f = []; end
 
 if ~exist('n_conditional_gibbs_cycles','var')
     n_conditional_gibbs_cycles = 1;
@@ -82,6 +88,7 @@ c_old = c;
 [log_Zs,node_weights] = deal(NaN(n_iter,M));
 sampled_indices = NaN(n_iter,P);
 switching_rate = NaN(n_iter,1);
+mus = cell(n_iter,M);
 
 b_Rao_Black_particle_choice = ~strcmpi(b_Rao_Black,'cond_update_only') && b_Rao_Black;
 b_Rao_Black_conditional_node_choice = strcmpi(b_Rao_Black,'cond_update_only') || b_Rao_Black;
@@ -93,19 +100,20 @@ for iter=1:n_iter
     % Local space preallocation required for parfor
     [particles_iter,new_retained_particle] = deal(cell(M,1));
     log_Zs_iter = NaN(M,1);
+    mus_iter = cell(M,1);
     
     % Call the pg_sweep for each node.  When their is a retained particle
     % this is a csmc sweep, when there is none it is an ordinary
     % unconditional smc sweep.
     if b_parallel
         parfor node = 1:M
-            [particles_iter{node},log_Zs_iter(node),new_retained_particle{node}] = ...
-                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},resample_method,false,b_Rao_Black_particle_choice);
+            [particles_iter{node},log_Zs_iter(node),new_retained_particle{node},mus_iter{node}] = ...
+                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},resample_method,false,f,b_Rao_Black_particle_choice);
         end
     else
         for node = 1:M
-            [particles_iter{node},log_Zs_iter(node),new_retained_particle{node}] = ...
-                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},resample_method,false,b_Rao_Black_particle_choice);
+            [particles_iter{node},log_Zs_iter(node),new_retained_particle{node},mus_iter{node}] = ...
+                pg_sweep(sampling_functions,weighting_functions,N,retained_particles{node},resample_method,false,f,b_Rao_Black_particle_choice);
         end
     end
     
@@ -143,6 +151,7 @@ for iter=1:n_iter
     
     % Store additional outputs outputs
     log_Zs(iter,:) = log_Zs_iter;
+    mus(iter,:) = mus_iter;
     node_weights(iter,:) = node_weights_iter;
     sampled_indices(iter,:) = c;
     switching_rate(iter) = (P-numel(intersect(c,c_old)))/P;

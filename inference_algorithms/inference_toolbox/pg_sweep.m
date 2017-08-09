@@ -1,5 +1,5 @@
-function [particles, log_Z, retained_particle] = pg_sweep(sampling_functions,...
-    weighting_functions,N,retained_particle,resample_method,b_compress,b_Rao_Black)
+function [particles, log_Z, retained_particle, mu] = pg_sweep(sampling_functions,...
+    weighting_functions,N,retained_particle,resample_method,b_compress,f,b_Rao_Black)
 %pg_sweep   Sweep used for Particle Gibbs, alternative move PG and iPMCMC
 %
 % When provided with a retained particle, performs a conditional sequential
@@ -33,6 +33,7 @@ function [particles, log_Z, retained_particle] = pg_sweep(sampling_functions,...
 %   log_Z = Log marginal likelihood estimate as per equation 4 in the paper
 %   retained_particle = Particle sampled as the retained particle as per
 %                       equation 7 (sampled in proportion to weight)
+%   mu = Expectation for this sweep
 %
 % Tom Rainforth 07/06/16
 
@@ -42,6 +43,7 @@ global sample_size
 if ~exist('retained_particle','var'); retained_particle = []; end
 if ~exist('resample_method','var'); resample_method = []; end
 if ~exist('b_compress','var') || isempty(b_compress); b_compress = false; end
+if ~exist('f','var'); f = []; end
 if ~exist('b_Rao_Black','var') || isempty(b_Rao_Black); b_Rao_Black = true; end
 
 b_conditional_sweep = ~isempty(retained_particle);
@@ -132,12 +134,22 @@ particles.relative_particle_weights = w/sum(w);
 % Reset the sample_size variable
 sample_size = N;
 
+% FIXME, might not want to calculate f at all points as could be expensive,
+% should add the option to calculate f after the rao blackwellisation
+if ~isempty(f)
+    mu = particles.function_expectation(f);
+else
+    mu = zeros(1,0);
+end
+
 % If not Rao Blackwellizing, the returned particle is the retained
 % particle rather than the full set.
 if ~b_Rao_Black
     particles = retained_particle;
     particles.relative_particle_weights = 1;
-elseif b_compress
+end
+
+if b_compress
     particles = compress_samples(particles,numel(weighting_functions));
 end
 

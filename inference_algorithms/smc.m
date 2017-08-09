@@ -1,5 +1,5 @@
-function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
-                        N,resample_method,n_iter,b_compress,b_parallel,n_islands,prop_sub_sample)
+function [samples, log_Zs, mus, mu] = smc(sampling_functions,weighting_functions,...
+                        N,resample_method,n_iter,b_compress,f,b_parallel,n_islands,prop_sub_sample)
 %smc    Independent SMC algorithm
 %
 % Performs SMC inference using independent sweeps.  See section 2.1 in the
@@ -20,6 +20,9 @@ function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
 %                     If empty takes default from resample_particles.m
 %   n_iter = Number of independent sweeps to perform for EACH island
 %   b_compress (boolean) = Whether to use compress_samples
+%   f = Function to take expectation of.  Takes the var field of samples as
+%       inputs.  See function_expectation.m.
+%                               Default = []; (i.e. no estimate made)
 %   b_parallel (boolean) = Whether to run sweeps in parallel (number of
 %                          threads automatically set by parfor)
 %   n_islands (+ve integer) = Number of equally weighted islands to use as
@@ -35,10 +38,13 @@ function [samples, log_Zs] = smc(sampling_functions,weighting_functions,...
 %   samples = Object array of type stack_object containing details about
 %             sampled variables, their weights and any constant variables
 %   log_Zs = Marginal likelihood of individual sweeps
+%   mus = Mean estimates of individual sweeps
+%   mu = Overall mean estimate using all the sweeps
 %
 % Tom Rainforth 12/06/16
 
 if ~exist('b_compress','var') || isempty(b_compress); b_compress = false; end
+if ~exist('f','var'); f = []; end
 if ~exist('b_parallel','var') || isempty(b_parallel); b_parallel = true; end
 if ~exist('n_islands','var') || isempty(n_islands); n_islands = 1; end
 if ~exist('prop_sub_sample','var') || isempty(prop_sub_sample); prop_sub_sample = 1; end
@@ -47,22 +53,23 @@ n_total = n_iter*n_islands;
 
 % First sweep to use in initialization
 log_Zs = NaN(n_total,1);
-[samples, log_Zs(1)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,prop_sub_sample);
+[samples, log_Zs(1), mus] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,f,prop_sub_sample);
 
 % Memory management
 if ~b_compress    
     [samples,b_compress] = memory_check(samples,n_total,numel(sampling_functions));
 end
 samples = repmat(samples,n_total,1);
+mus = repmat(mus,n_total,1);
 
 % Carry out independent sweeps
 if b_parallel
     parfor iter=2:n_total
-        [samples(iter), log_Zs(iter)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,prop_sub_sample);
+        [samples(iter), log_Zs(iter), mus(iter,:)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,f,prop_sub_sample);
     end
 else
     for iter=2:n_total
-        [samples(iter), log_Zs(iter)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,prop_sub_sample);
+        [samples(iter), log_Zs(iter), mus(iter,:)] = smc_sweep(sampling_functions,weighting_functions,N,resample_method,b_compress,f,prop_sub_sample);
     end
 end
 
@@ -75,6 +82,9 @@ max_log_Z = max(log_Zs,[],1);
 w = exp(bsxfun(@minus,log_Zs,max_log_Z));
 % Relative weights of each island taken to be equal
 w = bsxfun(@rdivide,w,sum(w,1))*(1/n_islands);
+mus = reshape(mus,n_iter,n_islands,size(mus,2));
+mus_w = bsxfun(@times,w,mus);
+mu = squeeze(sum(sum(mus_w,1),2));
 
 if ~isempty(samples(1).relative_particle_weights)
     for iter=1:n_total

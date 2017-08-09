@@ -1,5 +1,5 @@
-function [samples, log_Zs, b_accepts] = independent_nodes(sampling_functions,weighting_functions,...
-                N,resample_method,n_iter,b_compress,b_Rao_Black,b_parallel,Ms,initial_retained_particles)
+function [samples, log_Zs, b_accepts, mus] = independent_nodes(sampling_functions,weighting_functions,...
+                N,resample_method,n_iter,b_compress,f,b_Rao_Black,b_parallel,Ms,initial_retained_particles)
 %independent_nodes  Multiple non-interacting PMCMC nodes
 %
 % Allows an arbitrary combination of non-interacting particle gibbs, PIMH
@@ -16,6 +16,9 @@ function [samples, log_Zs, b_accepts] = independent_nodes(sampling_functions,wei
 %                     If empty takes default from resample_particles.m
 %   n_iter = Number of independent sweeps to perform
 %   b_compress (boolean) = Whether to use compress_samples
+%   f = Function to take expectation of.  Takes the var field of samples as
+%       inputs.  See function_expectation.m.
+%                               Default = []; (i.e. no estimate made)
 %   b_Rao_Black (boolean) = Whether to Rao-Blackwellize and return all
 %                           generated samples or just the retained particle
 %   b_parallel (boolean) = Whether to run sweeps in parallel (number of
@@ -36,8 +39,11 @@ function [samples, log_Zs, b_accepts] = independent_nodes(sampling_functions,wei
 %   b_accept = Boolean vector indicating if that iteration is accepted for
 %            PIMH / PIMH steps of M_apg nodes.  NaN indicates that the
 %            corresponding step / node is not a PIMH iteration.
+%   mus = Mean estimates of individual sweeps
 %
 % Tom Rainforth 12/06/16
+
+if ~exist('f','var'); f = []; end
 
 M_pg = Ms(1);
 M_apg = Ms(2);
@@ -48,6 +54,7 @@ M = M_pg+M_apg+M_pimh;
 samples = repmat(stack_object,n_iter,M);
 log_Zs = NaN(n_iter,M);
 b_accepts = NaN(n_iter,M);
+mus = cell(1,M);
 
 % Note that parfor needs an instance in each branch, even though most are
 % irrelevant
@@ -61,21 +68,21 @@ end
 if b_parallel    
     parfor n_n = 1:M
         if n_n<=M_pg
-            [samples(:,n_n), log_Zs(:,n_n)] = pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,b_Rao_Black,initial_retained_particles{n_n});
+            [samples(:,n_n), log_Zs(:,n_n), mus{n_n}] = pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,f,b_Rao_Black,initial_retained_particles{n_n});
         elseif n_n<=(M_pg+M_apg)
-            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n)] = a_pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,b_Rao_Black,initial_retained_particles{n_n});
+            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n), mus{n_n}] = a_pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,f,b_Rao_Black,initial_retained_particles{n_n});
         else
-            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n)] = pimh(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,b_Rao_Black);
+            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n), mus{n_n}] = pimh(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,f,b_Rao_Black);
         end
     end    
 else    
     for n_n = 1:M
         if n_n<=M_pg
-            [samples(:,n_n), log_Zs(:,n_n)] = pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,initial_retained_particles{n_n});
+            [samples(:,n_n), log_Zs(:,n_n), mus{n_n}] = pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,f,b_Rao_Black,initial_retained_particles{n_n});
         elseif n_n<=(M_pg+M_apg)
-            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n)] = a_pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,b_Rao_Black,initial_retained_particles{n_n});
+            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n), mus{n_n}] = a_pgibbs(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,f,b_Rao_Black,initial_retained_particles{n_n});
         else
-            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n)] = pimh(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,b_Rao_Black);
+            [samples(:,n_n), log_Zs(:,n_n),b_accepts(:,n_n), mus{n_n}] = pimh(sampling_functions,weighting_functions,N,resample_method,n_iter,b_compress,f,b_Rao_Black);
         end
     end    
 end
