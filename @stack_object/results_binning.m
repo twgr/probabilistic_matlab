@@ -136,7 +136,7 @@ for nd = 1:numel(dims)
         end
     end
     if b_discrete
-        densities{nd} = bsxfun(@rdivide,counts{nd},sum(densities{nd},1));
+        densities{nd} = bsxfun(@rdivide,counts{nd},sum(counts{nd},1));
     else
         densities{nd} = bsxfun(@rdivide,counts{nd},diff(edges{nd},[],1));
     end
