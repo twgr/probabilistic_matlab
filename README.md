@@ -2,21 +2,15 @@
 
 ### What is this repo? ###
 
-This code base currently falls somewhere between a Matlab-based probabilistic program and an SMC/PMCMC-based inference toolbox.  Models are written using a template format that is expressive and general purpose, but which forces an inference-friendly structuring.  This can produce faster inference and increased memory efficiency than fork-based probabilistic programs, by exploiting vectorization, compression, and more efficient sample storage (particularly for PMCMC algorithms).  As such, it is currently more of a compilation target for probabilistic programming systems than being a language in its own right, but it is still very easy to write models in directly the required format none the less. 
+This is a toolbox for automated inference in Matlab.  Models are written using a template format that is expressive and general purpose, but which forces an inference-friendly structuring.  Inference is based on SMC/PMCMC methods, with the enforced structuring producing fast inference and efficient memory usage; exploiting vectorization, compression, and efficient sample storage.  
 
 The main advantages of the package are:
 
-* It can run huge numbers of particles and iterations without suffering memory issues.  For example, on a 3 dimensional Kalman filter with 50 time-steps in the state sequence, with 32GB of available RAM, one can run up to ~10e6 particles and store ~200e6 total samples.
+* Allows state-of-the-art general purpose inference in the form of interacting particle Markov chain Monte Carlo (iPMCMC) without requiring expertise in inference on the part of the user.
+* It can run large numbers of particles and iterations without suffering memory issues for many models.  For example, on a 3 dimensional Kalman filter with 50 time-steps in the state sequence, with 32GB of available RAM, one can run up to ~10e6 particles and store ~200e6 total samples.
 * Vectorization gives fast performance for many models.
 * Can incorporate arbitrary deterministic external Matlab code.
 * Provides output in a common format with automatic output processing functions provided.
-* Allows state-of-the-art general purpose inference in the form of interacting particle Markov chain Monte Carlo (iPMCMC).
-
-These come a slight loss of expressivity, compared with systems such as Anglican or Venture.  The main things that are not supported are:
-
-* Memoization (though I hope to implement this in the future).
-* Infinite recursion.
-* The resampling points must remain fixed, though in some cases the resampling itself can be negated.  This should not in practise restrict the models that can be coded more than fork-based SMC/PMCMC methods as a) SMC/PMCMC based inferences require the number state-sequence steps to be constant across all particles and b) one can always define likelihood functions that branch depending on the variables present if necessary.
 
 ### How do I get set up? ###
 
@@ -30,6 +24,12 @@ These come a slight loss of expressivity, compared with systems such as Anglican
 * Post-processing of the outputs can be done using method functions of @stack_object, for example, result summaries and histogram plotting.  There are also a few functions in generic_toolbox that are useful but do not operate directly on the @stack_object.
 * If in doubt about which inference algorithm / options to use, try first to run SMC with as many particles as fit in memory.  If this is not sufficient, switch to using iPMCMC, again using as many particles as possible.
 * See the model_template_commented.m and infer.m for more information.
+
+When I get the time, I intend to write a compiler to convert Matlab code into required the template format, such that the package can be used as a probabilistic programming system.  Nonetheless, the current template-based model defintion format is simple to use it is own right and allows specification of a very general class of models. The main things that are not currently supported are:
+
+* Memoization (though I hope to implement this in the future).
+* Infinite recursion.
+* The resampling points must remain fixed, though in some cases the resampling itself can be negated.  This should not in practise restrict the models that can be coded more than fork-based SMC/PMCMC methods as a) SMC/PMCMC based inferences require the number state-sequence steps to be constant across all particles and b) one can always define likelihood functions that branch depending on the variables present if necessary.
 
 ### Supported inference algorithms ###
 
