@@ -53,8 +53,12 @@ for n_v = 1:numel(variables)
     if n_unique==1
         if ~isempty(assignment_order)
             s.(variables{n_v})(cell2mat(assignment_order),:) = cell2mat(this_var);
+        elseif iscell(this_var{1}) || isobject(this_var{1})
+            % FIXME this is still a little dodgy
+            [~,nd_this_var] = size(this_var{1});
+            s.(variables{n_v}) = reshape([this_var{:}],[],nd_this_var);
         else
-             s.(variables{n_v}) = cell2mat(this_var);
+            s.(variables{n_v}) = cell2mat(this_var);
         end
     else
         temp_stack_objects = repmat(stack_object,n_unique,1);   
