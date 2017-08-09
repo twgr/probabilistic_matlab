@@ -17,9 +17,9 @@ branching_KL = sum(kl_diffs);
 
 %% Gaussian mean and variance
 
-samples_g = infer('gaussian_model',[],options{:});
+samples_g = infer('gaussian_model',[],options{:},'f',@(x) x.mu>8);
 
-mu_g_out = eempirical_moments(samples_g,1,'mu');
+mu_g_out = empirical_moments(samples_g,1,'mu');
 mu_g_truth = 7.25;
 sig_g_out = empirical_moments(samples_g,2,'mu');
 sig_g_truth = sqrt(1/1.2);
