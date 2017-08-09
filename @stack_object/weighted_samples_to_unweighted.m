@@ -64,7 +64,7 @@ if ~exist('n_samples_take','var') || isempty(n_samples_take)
 end
 
 samples.sparse_variable_relative_weights = [];
-samples = resample_particles(samples, samples.relative_weights, n_samples_take, resample_method);
+samples = resample_particles(samples, log(samples.relative_particle_weights), n_samples_take, resample_method);
 
 if bRecompress
     if numel(p_fields)==1

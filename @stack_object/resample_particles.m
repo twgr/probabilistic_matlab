@@ -45,10 +45,8 @@ for n_f = 1:numel(p_fields)
 end
 
 if ~isempty(particles.relative_particle_weights)
-    sum_rel_weight = sum(particles.relative_particle_weights);
-    particles.relative_particle_weights = particles.relative_particle_weights(i_resample,:);
-    particles.relative_particle_weights = particles.relative_particle_weights.*...
-                        (sum_rel_weight)./sum(particles.relative_particle_weights);
+    [~,rel_weights] = log_sum_exp(log(particles.relative_particle_weights(i_resample,:))-log_weights(i_resample,:));
+    particles.relative_particle_weights = rel_weights./sum(rel_weights);
 end
 
 end
